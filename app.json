@@ -1,0 +1,88 @@
+{
+  "expo": {
+    "name": "myhouz",
+    "slug": "myhouz",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "scheme": "myhouz",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#F2EDE7"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.myhouz.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "myhouz needs camera access to take photos of items.",
+        "NSPhotoLibraryUsageDescription": "myhouz needs photo library access to add photos to items.",
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "appleTeamId": "PPWHQ52VLV"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#F2EDE7"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.myhouz.app",
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      [
+        "expo-router",
+        {
+          "root": "./src/app"
+        }
+      ],
+      "expo-localization",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#F2EDE7"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "myhouz needs access to your photos to add images to items.",
+          "cameraPermission": "myhouz needs access to your camera to take photos."
+        }
+      ],
+      [
+        "@sentry/react-native/expo",
+        {
+          "url": "https://sentry.io/",
+          "project": "myhouz-mobile",
+          "organization": "agility-4k"
+        }
+      ],
+      "expo-apple-authentication"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "root": "./src/app"
+      },
+      "eas": {
+        "projectId": "d080c960-0292-4288-a0e8-890923c80fc6"
+      }
+    },
+    "owner": "renanagilitycreative"
+  }
+}

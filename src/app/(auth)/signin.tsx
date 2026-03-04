@@ -1,17 +1,22 @@
-import { useState } from "react";
-import { View, Text, TextInput, Pressable, ActivityIndicator } from "react-native";
+import { useState, useMemo } from "react";
+import { View, Text, TextInput, Pressable, ActivityIndicator, Image } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/stores/toast.store";
+import { getStorage } from "@/core/config";
+import { STORAGE_KEYS } from "@/data/storage/storage.interface";
 
 export default function SignInScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const { signInWithEmail, isLoading } = useAuth();
 
-  const [email, setEmail] = useState("");
+  const savedEmail = useMemo(() => getStorage().getString(STORAGE_KEYS.LAST_EMAIL) ?? "", []);
+  const isReturningUser = savedEmail.length > 0;
+
+  const [email, setEmail] = useState(savedEmail);
   const [password, setPassword] = useState("");
 
   const handleSignIn = async () => {
@@ -34,12 +39,20 @@ export default function SignInScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
       <View className="flex-1 px-6 pt-8">
-        <Pressable onPress={() => router.back()} className="mb-8">
-          <Text className="text-primary text-base">{t("common.back")}</Text>
-        </Pressable>
+        {/* Logo */}
+        <View className="items-center mb-8">
+          <Image
+            source={require("../../../assets/splash-icon.png")}
+            style={{ width: 80, height: 80 }}
+            resizeMode="contain"
+          />
+          <Text className="text-muted-foreground text-sm mt-2">
+            {t("auth.welcomeSubtitle")}
+          </Text>
+        </View>
 
         <Text className="text-3xl font-bold text-foreground dark:text-foreground-dark mb-8">
-          {t("auth.signIn")}
+          {isReturningUser ? t("auth.welcomeBack") : t("auth.signIn")}
         </Text>
 
         <View className="gap-4 mb-6">
@@ -68,6 +81,7 @@ export default function SignInScreen() {
               value={password}
               onChangeText={setPassword}
               secureTextEntry
+              autoFocus={isReturningUser}
               placeholder={t("auth.password")}
               placeholderTextColor="#64697A"
             />

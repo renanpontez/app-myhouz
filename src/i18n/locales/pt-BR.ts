@@ -70,6 +70,8 @@ const ptBR = {
     errorEmailTaken: "Este e-mail já está em uso. Tente entrar com ele.",
     errorPasswordTooShort: "A senha deve ter pelo menos 6 caracteres.",
     errorInvalidEmail: "Digite um e-mail válido.",
+    welcomeBack: "Bem-vindo de volta!",
+    createAccount: "Crie sua conta",
   },
 
   // Dashboard

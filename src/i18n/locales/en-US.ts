@@ -68,6 +68,8 @@ const enUS = {
     errorEmailTaken: "This email is already in use. Try signing in instead.",
     errorPasswordTooShort: "Password must be at least 6 characters.",
     errorInvalidEmail: "Please enter a valid email address.",
+    welcomeBack: "Welcome back!",
+    createAccount: "Create your account",
   },
 
   dashboard: {

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, TextInput, Pressable, ActivityIndicator } from "react-native";
+import { View, Text, TextInput, Pressable, ActivityIndicator, Image } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
@@ -41,12 +41,20 @@ export default function SignUpScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
       <View className="flex-1 px-6 pt-8">
-        <Pressable onPress={() => router.back()} className="mb-8">
-          <Text className="text-primary text-base">{t("common.back")}</Text>
-        </Pressable>
+        {/* Logo */}
+        <View className="items-center mb-8">
+          <Image
+            source={require("../../../assets/splash-icon.png")}
+            style={{ width: 80, height: 80 }}
+            resizeMode="contain"
+          />
+          <Text className="text-muted-foreground text-sm mt-2">
+            {t("auth.welcomeSubtitle")}
+          </Text>
+        </View>
 
         <Text className="text-3xl font-bold text-foreground dark:text-foreground-dark mb-8">
-          {t("auth.signUp")}
+          {t("auth.createAccount")}
         </Text>
 
         <View className="gap-4 mb-6">
