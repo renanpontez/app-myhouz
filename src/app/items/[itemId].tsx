@@ -9,6 +9,7 @@ import { useItem, useUpdateItem, useDeleteItem } from "@/hooks/useItems";
 import { useHouseholdStore } from "@/stores";
 import { getMemberName } from "@/utils/members";
 import { MemberPicker } from "@/components/ui/MemberPicker";
+import { SkeletonDetail } from "@/components/ui/Skeleton";
 import { colors } from "@/styles/colors";
 import { toast } from "@/stores/toast.store";
 import type { ItemType, ItemPriority, ItemStatus } from "@/domain/models";
@@ -106,8 +107,8 @@ export default function ItemDetailScreen() {
 
   if (isLoading || !item) {
     return (
-      <SafeAreaView className="flex-1 bg-background dark:bg-background-dark items-center justify-center">
-        <ActivityIndicator size="large" color={colors.primary.DEFAULT} />
+      <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
+        <SkeletonDetail />
       </SafeAreaView>
     );
   }

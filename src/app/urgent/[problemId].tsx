@@ -8,6 +8,7 @@ import { format } from "date-fns";
 import { useUrgentProblem, useUpdateUrgentProblem, useResolveUrgentProblem, useDeleteUrgentProblem } from "@/hooks/useUrgent";
 import { useHouseholdStore } from "@/stores";
 import { getMemberName } from "@/utils/members";
+import { SkeletonDetail } from "@/components/ui/Skeleton";
 import { colors } from "@/styles/colors";
 import { toast } from "@/stores/toast.store";
 
@@ -93,8 +94,8 @@ export default function UrgentDetailScreen() {
 
   if (isLoading || !problem) {
     return (
-      <SafeAreaView className="flex-1 bg-background dark:bg-background-dark items-center justify-center">
-        <ActivityIndicator size="large" color={colors.primary.DEFAULT} />
+      <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
+        <SkeletonDetail />
       </SafeAreaView>
     );
   }

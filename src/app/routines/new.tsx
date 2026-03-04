@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { View, Text, TextInput, Pressable, ActivityIndicator, ScrollView } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { useCreateRoutine } from "@/hooks/useRoutines";
@@ -16,12 +16,17 @@ const INTERVAL_UNITS = ["days", "weeks", "months"] as const;
 export default function NewRoutineScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { startsAt: startsAtParam } = useLocalSearchParams<{ startsAt?: string }>();
   const createRoutine = useCreateRoutine();
 
   const [title, setTitle] = useState("");
   const [recurrence, setRecurrence] = useState<RecurrenceType>("daily");
   const [assignedTo, setAssignedTo] = useState<string | null>(null);
-  const [startsAt, setStartsAt] = useState<Date | null>(null);
+  const [startsAt, setStartsAt] = useState<Date | null>(() => {
+    if (!startsAtParam) return null;
+    const [y, m, d] = startsAtParam.split("-");
+    return new Date(Number(y), Number(m) - 1, Number(d));
+  });
 
   // Custom recurrence state
   const [customMode, setCustomMode] = useState<"days_of_week" | "interval">("days_of_week");

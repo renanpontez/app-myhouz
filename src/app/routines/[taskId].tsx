@@ -13,6 +13,7 @@ import { MemberPicker } from "@/components/ui/MemberPicker";
 import { DateTimePicker } from "@/components/ui/DateTimePicker";
 import { DayOfWeekPicker } from "@/components/ui/DayOfWeekPicker";
 import { StreakIndicator } from "@/components/ui/StreakIndicator";
+import { SkeletonDetail } from "@/components/ui/Skeleton";
 import { colors } from "@/styles/colors";
 import { toast } from "@/stores/toast.store";
 import type { RecurrenceType, RecurrenceMeta } from "@/domain/models";
@@ -139,8 +140,8 @@ export default function RoutineDetailScreen() {
 
   if (isLoading || !task) {
     return (
-      <SafeAreaView className="flex-1 bg-background dark:bg-background-dark items-center justify-center">
-        <ActivityIndicator size="large" color={colors.primary.DEFAULT} />
+      <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
+        <SkeletonDetail />
       </SafeAreaView>
     );
   }

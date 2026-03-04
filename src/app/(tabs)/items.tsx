@@ -1,14 +1,16 @@
 import { View, Text, Pressable, RefreshControl } from "react-native";
+import Animated, { FadeIn } from "react-native-reanimated";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { FlashList } from "@shopify/flash-list";
 import { Ionicons } from "@expo/vector-icons";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useFocusEffect } from "expo-router";
 import { useItems } from "@/hooks/useItems";
 import { ListRow } from "@/components/ui/ListRow";
 import { Badge } from "@/components/ui/Badge";
+import { SkeletonListRow } from "@/components/ui/Skeleton";
 import { colors } from "@/styles/colors";
 import type { HouseholdItem, ItemType, ItemStatus } from "@/domain/models";
 
@@ -78,10 +80,13 @@ export default function ItemsScreen() {
   const hasFilters = Object.keys(filters).length > 0;
   const { data, refetch, isLoading } = useItems(hasFilters ? filters : undefined);
 
+  const refetchRef = useRef(refetch);
+  refetchRef.current = refetch;
+
   useFocusEffect(
     useCallback(() => {
-      refetch();
-    }, [refetch]),
+      refetchRef.current();
+    }, []),
   );
 
   const items = data?.data?.data ?? [];
@@ -144,18 +149,26 @@ export default function ItemsScreen() {
       <FlashList
         data={items}
         renderItem={({ item }) => (
-          <ItemRowContent
-            item={item}
-            onPress={() => router.push(`/items/${item.id}`)}
-            t={t}
-          />
+          <Animated.View entering={FadeIn.duration(300)}>
+            <ItemRowContent
+              item={item}
+              onPress={() => router.push(`/items/${item.id}`)}
+              t={t}
+            />
+          </Animated.View>
         )}
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 20 }}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary.DEFAULT} />
         }
         ListEmptyComponent={
-          !isLoading ? (
+          isLoading ? (
+            <View>
+              {Array.from({ length: 5 }, (_, i) => (
+                <SkeletonListRow key={i} />
+              ))}
+            </View>
+          ) : (
             <View className="items-center pt-20">
               <Ionicons name="cart-outline" size={48} color={colors.muted.foreground} />
               <Text className="text-lg font-semibold text-foreground dark:text-foreground-dark mt-4">
@@ -165,7 +178,7 @@ export default function ItemsScreen() {
                 {t("items.noItemsSubtitle")}
               </Text>
             </View>
-          ) : null
+          )
         }
       />
     </SafeAreaView>

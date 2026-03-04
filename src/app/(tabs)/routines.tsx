@@ -1,25 +1,26 @@
 import { View, Text, Pressable, RefreshControl } from "react-native";
+import Animated, { FadeIn } from "react-native-reanimated";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { FlashList } from "@shopify/flash-list";
 import { Ionicons } from "@expo/vector-icons";
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef } from "react";
 import { useFocusEffect } from "expo-router";
 import { useRoutines, useToggleRoutine } from "@/hooks/useRoutines";
 import { useHouseholdStore } from "@/stores";
 import { isActiveToday, isCompletedThisCycle, getStreak } from "@/utils/cycle";
 import { formatDisplayName } from "@/utils/format";
 import { getTaskIcon } from "@/utils/task-icons";
-import { ListRow } from "@/components/ui/ListRow";
 import { Badge } from "@/components/ui/Badge";
 import { StreakIndicator } from "@/components/ui/StreakIndicator";
+import { SkeletonListRow } from "@/components/ui/Skeleton";
 import { colors } from "@/styles/colors";
 import type { RoutineTaskWithCompletions } from "@/domain/models";
 
 function TaskRowContent({
   task,
-  isCompleted,
+  isCompleted: serverCompleted,
   onToggle,
   onPress,
   assigneeName,
@@ -34,54 +35,83 @@ function TaskRowContent({
   streak: number;
   t: (key: string) => string;
 }) {
+  const [optimistic, setOptimistic] = useState<boolean | null>(null);
+  const isCompleted = optimistic ?? serverCompleted;
+
+  const prevServer = useRef(serverCompleted);
+  if (prevServer.current !== serverCompleted) {
+    prevServer.current = serverCompleted;
+    setOptimistic(null);
+  }
+
   const TaskIcon = getTaskIcon(task.icon);
-  const iconColor = isCompleted ? colors.success.DEFAULT : colors.primary.DEFAULT;
 
   const subtitleParts: string[] = [];
   subtitleParts.push(t(`routines.${task.recurrence}`));
   if (assigneeName) subtitleParts.push(assigneeName);
 
+  const handleToggle = () => {
+    setOptimistic(!isCompleted);
+    onToggle();
+  };
+
   return (
-    <ListRow
-      icon={{
-        icon: "ellipse-outline",
-        color: iconColor,
-      }}
-      leading={
-        <Pressable
-          onPress={onToggle}
-          style={{
-            width: 28,
-            height: 28,
-            borderRadius: 14,
-            borderWidth: 2,
-            borderColor: isCompleted ? colors.success.DEFAULT : colors.border.DEFAULT,
-            backgroundColor: isCompleted ? colors.success.DEFAULT : "transparent",
-            alignItems: "center",
-            justifyContent: "center",
-            marginRight: 12,
-          }}
-          hitSlop={8}
-        >
-          {isCompleted && <Ionicons name="checkmark" size={16} color="#fff" />}
-        </Pressable>
-      }
-      title={task.title}
-      strikethrough={isCompleted}
-      subtitle={
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-          <TaskIcon size={12} color={colors.muted.foreground} />
-          <Text style={{ fontSize: 12, color: colors.muted.foreground }}>
-            {subtitleParts.join(" · ")}
-          </Text>
+    <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
+      <Pressable
+        onPress={handleToggle}
+        style={{
+          width: 28,
+          height: 28,
+          borderRadius: 14,
+          borderWidth: 2,
+          borderColor: isCompleted ? colors.success.DEFAULT : colors.border.DEFAULT,
+          backgroundColor: isCompleted ? colors.success.DEFAULT : "transparent",
+          alignItems: "center",
+          justifyContent: "center",
+          marginRight: 10,
+        }}
+        hitSlop={10}
+      >
+        {isCompleted && <Ionicons name="checkmark" size={16} color="#fff" />}
+      </Pressable>
+
+      {/* Card — separate Pressable for navigation */}
+      <Pressable
+        onPress={onPress}
+        style={{ flex: 1, flexDirection: "row", alignItems: "center", borderRadius: 16, padding: 14, borderWidth: 1 }}
+        className="bg-card dark:bg-card-dark border-border dark:border-border-dark active:opacity-80"
+      >
+        <TaskIcon size={20} color={colors.primary.DEFAULT} />
+        <View style={{ flex: 1, marginLeft: 12 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <Text
+              numberOfLines={1}
+              style={{
+                fontSize: 15,
+                fontWeight: "500",
+                flex: 1,
+                textDecorationLine: isCompleted ? "line-through" : "none",
+                color: isCompleted ? colors.muted.foreground : colors.foreground.DEFAULT,
+              }}
+              className={isCompleted ? "text-muted-foreground" : "text-foreground dark:text-foreground-dark"}
+            >
+              {task.title}
+            </Text>
+            <Badge label={t(`routines.${task.recurrence}`)} variant="muted" />
+          </View>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 2 }}>
+            <TaskIcon size={12} color={colors.muted.foreground} />
+            <Text style={{ fontSize: 12, color: colors.muted.foreground }}>
+              {subtitleParts.join(" · ")}
+            </Text>
+          </View>
         </View>
-      }
-      badge={
-        <Badge label={t(`routines.${task.recurrence}`)} variant="muted" />
-      }
-      trailing={<StreakIndicator streak={streak} />}
-      onPress={onPress}
-    />
+        <View style={{ marginLeft: 8 }}>
+          <StreakIndicator streak={streak} />
+        </View>
+        <Ionicons name="chevron-forward" size={18} color={colors.muted.foreground} style={{ marginLeft: 4 }} />
+      </Pressable>
+    </View>
   );
 }
 
@@ -92,10 +122,13 @@ export default function RoutinesScreen() {
   const toggleMutation = useToggleRoutine();
   const { members } = useHouseholdStore();
 
+  const refetchRef = useRef(refetch);
+  refetchRef.current = refetch;
+
   useFocusEffect(
     useCallback(() => {
-      refetch();
-    }, [refetch]),
+      refetchRef.current();
+    }, []),
   );
 
   const [viewMode, setViewMode] = useState<"today" | "all">("today");
@@ -169,15 +202,21 @@ export default function RoutinesScreen() {
             : null;
 
           return (
-            <TaskRowContent
-              task={item}
-              isCompleted={isCompleted}
-              onToggle={() => toggleMutation.mutate(item.id)}
-              onPress={() => router.push(`/routines/${item.id}`)}
-              assigneeName={assigneeName}
-              streak={streak}
-              t={t}
-            />
+            <Animated.View entering={FadeIn.duration(300)}>
+              <TaskRowContent
+                task={item}
+                isCompleted={isCompleted}
+                onToggle={() => {
+                  toggleMutation.mutate(item.id, {
+                    onSuccess: () => refetch(),
+                  });
+                }}
+                onPress={() => router.push(`/routines/${item.id}`)}
+                assigneeName={assigneeName}
+                streak={streak}
+                t={t}
+              />
+            </Animated.View>
           );
         }}
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 20 }}
@@ -185,7 +224,13 @@ export default function RoutinesScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary.DEFAULT} />
         }
         ListEmptyComponent={
-          !isLoading ? (
+          isLoading ? (
+            <View>
+              {Array.from({ length: 5 }, (_, i) => (
+                <SkeletonListRow key={i} />
+              ))}
+            </View>
+          ) : (
             <View className="items-center pt-20">
               <Ionicons name="checkbox-outline" size={48} color={colors.muted.foreground} />
               <Text className="text-lg font-semibold text-foreground dark:text-foreground-dark mt-4">
@@ -195,7 +240,7 @@ export default function RoutinesScreen() {
                 {t("routines.noTasksSubtitle")}
               </Text>
             </View>
-          ) : null
+          )
         }
       />
     </SafeAreaView>

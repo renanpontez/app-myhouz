@@ -18,3 +18,4 @@ export { StreakIndicator } from './StreakIndicator';
 export { MemberPicker } from './MemberPicker';
 export { DateTimePicker } from './DateTimePicker';
 export { DayOfWeekPicker } from './DayOfWeekPicker';
+export { Skeleton, SkeletonListRow, SkeletonCard, SkeletonDashboard, SkeletonDetail } from './Skeleton';

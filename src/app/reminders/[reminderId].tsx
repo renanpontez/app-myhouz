@@ -10,6 +10,7 @@ import { useHouseholdStore } from "@/stores";
 import { getMemberName } from "@/utils/members";
 import { MemberPicker } from "@/components/ui/MemberPicker";
 import { DateTimePicker } from "@/components/ui/DateTimePicker";
+import { SkeletonDetail } from "@/components/ui/Skeleton";
 import { colors } from "@/styles/colors";
 import { toast } from "@/stores/toast.store";
 
@@ -82,8 +83,8 @@ export default function ReminderDetailScreen() {
 
   if (isLoading || !reminder) {
     return (
-      <SafeAreaView className="flex-1 bg-background dark:bg-background-dark items-center justify-center">
-        <ActivityIndicator size="large" color={colors.primary.DEFAULT} />
+      <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
+        <SkeletonDetail />
       </SafeAreaView>
     );
   }
