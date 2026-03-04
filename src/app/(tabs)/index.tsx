@@ -251,43 +251,50 @@ export default function DashboardScreen() {
           </View>
 
           {/* Notification bell */}
-          <Pressable
-            onPress={() => router.push("/urgent/")}
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: 20,
-              alignItems: "center",
-              justifyContent: "center",
-              marginLeft: 8,
-            }}
-            hitSlop={8}
-          >
-            <Ionicons
-              name="notifications-outline"
-              size={24}
-              color={urgentProblems.length > 0 ? colors.destructive.DEFAULT : colors.muted.foreground}
-            />
-            {urgentProblems.length > 0 && (
-              <View
+          {(() => {
+            const alertCount = reminders.length + urgentProblems.length;
+            const hasOverdue = overdueCount > 0 || urgentProblems.length > 0;
+            return (
+              <Pressable
+                onPress={() => router.push("/reminders/")}
                 style={{
-                  position: "absolute",
-                  top: 4,
-                  right: 4,
-                  width: 16,
-                  height: 16,
-                  borderRadius: 8,
-                  backgroundColor: colors.destructive.DEFAULT,
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
                   alignItems: "center",
                   justifyContent: "center",
+                  marginLeft: 8,
                 }}
+                hitSlop={8}
               >
-                <Text style={{ color: "#fff", fontSize: 9, fontWeight: "700" }}>
-                  {urgentProblems.length}
-                </Text>
-              </View>
-            )}
-          </Pressable>
+                <Ionicons
+                  name="notifications-outline"
+                  size={24}
+                  color={hasOverdue ? colors.destructive.DEFAULT : colors.muted.foreground}
+                />
+                {alertCount > 0 && (
+                  <View
+                    style={{
+                      position: "absolute",
+                      top: 2,
+                      right: 0,
+                      minWidth: 18,
+                      height: 18,
+                      borderRadius: 9,
+                      paddingHorizontal: 4,
+                      backgroundColor: hasOverdue ? colors.destructive.DEFAULT : colors.primary.DEFAULT,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Text style={{ color: "#fff", fontSize: 10, fontWeight: "700" }}>
+                      {alertCount}
+                    </Text>
+                  </View>
+                )}
+              </Pressable>
+            );
+          })()}
         </Animated.View>
 
         {/* Week Strip */}
