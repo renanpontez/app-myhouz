@@ -208,10 +208,8 @@ export function WeekStrip({
                   justifyContent: "center",
                 }}
               >
-                {/* SVG progress ring (only if there are tasks) */}
-                {hasActive && (
-                  <ProgressRing progress={progress} color={ringColor} />
-                )}
+                {/* SVG progress ring — always visible as a track */}
+                <ProgressRing progress={progress} color={ringColor} />
 
                 {/* Inner circle */}
                 <View
