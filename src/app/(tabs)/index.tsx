@@ -333,7 +333,7 @@ export default function DashboardScreen() {
             }
           />
           {selectedDayTasks.length === 0 ? (
-            <View className="bg-card dark:bg-card-dark rounded-2xl p-4 border border-border dark:border-border-dark items-center">
+            <View className="bg-card dark:bg-card-dark rounded-2xl px-4 py-6 border border-border dark:border-border-dark items-center">
               <Text className="text-muted-foreground text-sm">
                 {t("dashboard.noTasksToday")}
               </Text>
@@ -385,7 +385,7 @@ export default function DashboardScreen() {
             counter={`${pendingItems.length}`}
           />
           {pendingItems.length === 0 ? (
-            <View className="bg-card dark:bg-card-dark rounded-2xl p-4 border border-border dark:border-border-dark items-center">
+            <View className="bg-card dark:bg-card-dark rounded-2xl px-4 py-6 border border-border dark:border-border-dark items-center">
               <Text className="text-muted-foreground text-sm mb-3">
                 {t("items.noItems")}
               </Text>
@@ -426,7 +426,7 @@ export default function DashboardScreen() {
             counter={`${reminders.length}`}
           />
           {reminders.length === 0 ? (
-            <View className="bg-card dark:bg-card-dark rounded-2xl p-4 border border-border dark:border-border-dark items-center">
+            <View className="bg-card dark:bg-card-dark rounded-2xl px-4 py-6 border border-border dark:border-border-dark items-center">
               <Text className="text-muted-foreground text-sm mb-3">
                 {t("reminders.noReminders")}
               </Text>
