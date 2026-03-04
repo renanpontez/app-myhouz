@@ -304,6 +304,7 @@ export default function DashboardScreen() {
             setWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }));
             setSelectedDay(new Date());
           }}
+          todayLabel={t("dashboard.today")}
         />
 
         {/* Today's Tasks Section */}
