@@ -385,11 +385,15 @@ export default function DashboardScreen() {
             counter={`${pendingItems.length}`}
           />
           {pendingItems.length === 0 ? (
-            <View className="bg-card dark:bg-card-dark rounded-2xl p-4 border border-border dark:border-border-dark items-center">
-              <Text className="text-muted-foreground text-sm">
-                {t("items.noItems")}
+            <Pressable
+              onPress={() => router.push("/items/new")}
+              className="bg-card dark:bg-card-dark rounded-2xl p-4 border border-border dark:border-border-dark flex-row items-center justify-center gap-2 active:opacity-70"
+            >
+              <Ionicons name="add-circle-outline" size={18} color={colors.primary.DEFAULT} />
+              <Text style={{ color: colors.primary.DEFAULT, fontSize: 14, fontWeight: "600" }}>
+                {t("items.addItem")}
               </Text>
-            </View>
+            </Pressable>
           ) : (
             <>
               {pendingItems.slice(0, 3).map((item) => (
@@ -417,11 +421,15 @@ export default function DashboardScreen() {
             counter={`${reminders.length}`}
           />
           {reminders.length === 0 ? (
-            <View className="bg-card dark:bg-card-dark rounded-2xl p-4 border border-border dark:border-border-dark items-center">
-              <Text className="text-muted-foreground text-sm">
-                {t("reminders.noReminders")}
+            <Pressable
+              onPress={() => router.push("/reminders/new")}
+              className="bg-card dark:bg-card-dark rounded-2xl p-4 border border-border dark:border-border-dark flex-row items-center justify-center gap-2 active:opacity-70"
+            >
+              <Ionicons name="add-circle-outline" size={18} color={colors.primary.DEFAULT} />
+              <Text style={{ color: colors.primary.DEFAULT, fontSize: 14, fontWeight: "600" }}>
+                {t("reminders.addReminder")}
               </Text>
-            </View>
+            </Pressable>
           ) : (
             <>
               {reminders.slice(0, 3).map((reminder) => (
