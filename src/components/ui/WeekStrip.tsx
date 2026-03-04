@@ -3,6 +3,7 @@ import Svg, { Circle } from "react-native-svg";
 import { Ionicons } from "@expo/vector-icons";
 import { shortDayName } from "@/utils/format";
 import { isSameDay, isToday } from "date-fns";
+import { useTheme } from "@/providers/ThemeProvider";
 import { colors } from "@/styles/colors";
 
 interface DayStatus {
@@ -83,6 +84,8 @@ export function WeekStrip({
   todayLabel = "Today",
   locale = "pt-BR",
 }: WeekStripProps) {
+  const { isDark } = useTheme();
+  const mutedFg = isDark ? colors.muted.foregroundDark : colors.muted.foreground;
   return (
     <View className="mb-4">
       {/* Navigation row: Today button (left) | week label + arrows (right) */}
@@ -123,21 +126,21 @@ export function WeekStrip({
         {/* Week label + arrows */}
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
           <Pressable onPress={onPrevWeek} hitSlop={8}>
-            <Ionicons name="chevron-back" size={18} color={colors.muted.foreground} />
+            <Ionicons name="chevron-back" size={18} color={mutedFg} />
           </Pressable>
           <Text
             style={{
               fontSize: 13,
               fontWeight: "600",
-              color: colors.muted.foreground,
               minWidth: 100,
               textAlign: "center",
             }}
+            className="text-muted-foreground dark:text-muted-foreground-dark"
           >
             {weekLabel}
           </Text>
           <Pressable onPress={onNextWeek} hitSlop={8}>
-            <Ionicons name="chevron-forward" size={18} color={colors.muted.foreground} />
+            <Ionicons name="chevron-forward" size={18} color={mutedFg} />
           </Pressable>
         </View>
       </View>
@@ -153,12 +156,12 @@ export function WeekStrip({
           const allDone = hasActive && status.done >= status.total;
 
           // Inner circle colors
-          let circleBg = "transparent";
-          let numberColor = colors.muted.foreground;
-          let labelColor = colors.muted.foreground;
+          let circleBg: string = "transparent";
+          let numberColor: string = mutedFg;
+          let labelColor: string = mutedFg;
 
           // Ring color: green when all done, primary 30% for partial/default
-          let ringColor = colors.primary.DEFAULT + "4D";
+          let ringColor: string = colors.primary.DEFAULT;
           if (allDone) ringColor = colors.success.DEFAULT;
 
           if (isSelected) {
@@ -170,8 +173,8 @@ export function WeekStrip({
             circleBg = colors.success.DEFAULT;
             numberColor = "#FFFFFF";
           } else if (isDayToday) {
-            numberColor = colors.foreground.DEFAULT;
-            labelColor = colors.foreground.DEFAULT;
+            numberColor = isDark ? colors.foreground.dark : colors.foreground.DEFAULT;
+            labelColor = isDark ? colors.foreground.dark : colors.foreground.DEFAULT;
           }
 
           return (

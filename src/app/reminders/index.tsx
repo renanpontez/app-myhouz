@@ -64,9 +64,10 @@ function ReminderRowContent({
         <Text
           style={{
             fontSize: 12,
-            color: isOverdue ? colors.destructive.DEFAULT : colors.muted.foreground,
             fontWeight: isOverdue ? "600" : "400",
+            ...(isOverdue ? { color: colors.destructive.DEFAULT } : {}),
           }}
+          className={isOverdue ? "" : "text-muted-foreground dark:text-muted-foreground-dark"}
         >
           {format(new Date(reminder.due_at), "MMM d, HH:mm")}
         </Text>

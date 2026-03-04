@@ -34,7 +34,6 @@ export function SectionHeader({
             style={{
               fontSize: 16,
               fontWeight: "700",
-              color: colors.foreground.DEFAULT,
             }}
             className="text-foreground dark:text-foreground-dark"
           >
@@ -44,9 +43,9 @@ export function SectionHeader({
             <Text
               style={{
                 fontSize: 13,
-                color: colors.muted.foreground,
                 fontWeight: "500",
               }}
+              className="text-muted-foreground dark:text-muted-foreground-dark"
             >
               {counter}
             </Text>
@@ -79,7 +78,7 @@ export function SectionHeader({
           }}
         >
           <Ionicons name={subtitle.icon} size={12} color={colors.muted.foreground} />
-          <Text style={{ fontSize: 12, color: colors.muted.foreground }}>
+          <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark">
             {subtitle.text}
           </Text>
         </View>

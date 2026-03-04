@@ -61,6 +61,8 @@ export default function SettingsScreen() {
     if (!activeHouseholdId) return;
     setDeleting(true);
     try {
+      const httpClient = getHttpClient();
+      await httpClient.delete(API.household(activeHouseholdId).detail);
       await deleteAccount();
     } catch {
       toast.error(t("error.generic"));
