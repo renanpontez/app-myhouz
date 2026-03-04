@@ -48,8 +48,16 @@ const ptBR = {
     signUpError: "Erro ao criar conta",
     deleteAccount: "Excluir conta",
     deleteAccountConfirm: "Tem certeza que deseja excluir sua conta? Esta ação é irreversível.",
+    deleteAccountOwnerTitle: "Você é o proprietário desta casa",
+    deleteAccountOwnerDesc: "Transfira a propriedade para alguém antes de sair, ou exclua tudo permanentemente.",
     deleteAccountSoleOwner: "Você é o único membro. Excluir sua conta apagará permanentemente todos os dados da casa, incluindo itens, rotinas e lembretes. Não será possível desfazer.",
     deleteEverything: "Excluir Tudo",
+    deletingAccount: "Excluindo sua conta...",
+    transferTo: "Transferir propriedade para",
+    inviteSomeone: "Convidar Alguém Primeiro",
+    deleteAnywayButton: "Quero excluir tudo mesmo assim",
+    finalConfirmTitle: "Tem certeza absoluta?",
+    finalConfirmDescOwner: "Todos os dados da casa serão apagados permanentemente — itens, rotinas, lembretes, tudo. Não será possível desfazer.",
     transferOwnership: "Transferir Propriedade",
     transferOwnershipDesc: "Escolha quem assumirá sua casa antes da sua conta ser excluída.",
     transferAndDelete: "Transferir e Excluir",
@@ -66,7 +74,9 @@ const ptBR = {
 
   // Dashboard
   dashboard: {
-    greeting: "Olá, {{name}}!",
+    goodMorning: "Bom dia!",
+    goodAfternoon: "Boa tarde!",
+    goodEvening: "Boa noite!",
     today: "Hoje",
     todaysTasks: "Tarefas de Hoje",
     noTasksToday: "Nenhuma tarefa para hoje",

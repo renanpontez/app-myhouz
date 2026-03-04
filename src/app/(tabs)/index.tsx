@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Pressable, RefreshControl } from "react-native";
+import { View, Text, ScrollView, Pressable, RefreshControl, Image } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -16,7 +16,7 @@ import {
   hasCompletionOnDate,
   getStreak,
 } from "@/utils/cycle";
-import { formatDisplayName, shortDayName } from "@/utils/format";
+import { formatDisplayName, getInitials } from "@/utils/format";
 import { getTaskIcon } from "@/utils/task-icons";
 import { WeekStrip } from "@/components/ui/WeekStrip";
 import { SectionHeader } from "@/components/ui/SectionHeader";
@@ -42,11 +42,18 @@ import type { RoutineTaskWithCompletions, HouseholdItem, Reminder } from "@/doma
 
 const MAX_DASHBOARD_ROWS = 5;
 
+function getTimeGreetingKey(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return "dashboard.goodMorning";
+  if (hour < 18) return "dashboard.goodAfternoon";
+  return "dashboard.goodEvening";
+}
+
 export default function DashboardScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { user } = useAuthStore();
-  const { household, members } = useHouseholdStore();
+  const { members } = useHouseholdStore();
   const { fetchHousehold } = useHousehold();
   const toggleMutation = useToggleRoutine();
 
@@ -189,49 +196,98 @@ export default function DashboardScreen() {
           <SkeletonDashboard />
         ) : (
         <>
-        {/* Greeting + Urgent alert */}
-        <Animated.View entering={FadeIn.duration(300)} className="pb-4 flex-row items-center justify-between">
-          <View style={{ flex: 1 }}>
-            <Text className="text-sm text-muted-foreground">
-              {household?.name}
-            </Text>
-            <Text className="text-2xl font-bold text-foreground dark:text-foreground-dark">
-              {t("dashboard.greeting", { name: displayName })}
-            </Text>
-          </View>
-          {urgentProblems.length > 0 && (
-            <Pressable
-              onPress={() => router.push("/urgent/")}
+        {/* Header: Avatar + Greeting + Bell */}
+        <Animated.View
+          entering={FadeIn.duration(300)}
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            paddingBottom: 16,
+            paddingTop: 4,
+          }}
+        >
+          {/* Avatar */}
+          {user?.avatar_url ? (
+            <Image
+              source={{ uri: user.avatar_url }}
               style={{
-                width: 40,
-                height: 40,
-                borderRadius: 20,
-                backgroundColor: colors.destructive.DEFAULT + "18",
+                width: 48,
+                height: 48,
+                borderRadius: 24,
+                marginRight: 12,
+              }}
+            />
+          ) : (
+            <View
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: 24,
+                backgroundColor: colors.primary.DEFAULT + "18",
                 alignItems: "center",
                 justifyContent: "center",
-                marginLeft: 12,
+                marginRight: 12,
               }}
             >
-              <Ionicons name="alert-circle" size={24} color={colors.destructive.DEFAULT} />
+              <Text style={{ fontSize: 16, fontWeight: "700", color: colors.primary.DEFAULT }}>
+                {user?.name ? getInitials(user.name) : ""}
+              </Text>
+            </View>
+          )}
+
+          {/* Greeting text */}
+          <View style={{ flex: 1 }}>
+            <Text
+              style={{ fontSize: 13, color: colors.muted.foreground }}
+            >
+              {t(getTimeGreetingKey())}
+            </Text>
+            <Text
+              style={{ fontSize: 22, fontWeight: "700" }}
+              className="text-foreground dark:text-foreground-dark"
+            >
+              {displayName}
+            </Text>
+          </View>
+
+          {/* Notification bell */}
+          <Pressable
+            onPress={() => router.push("/urgent/")}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              alignItems: "center",
+              justifyContent: "center",
+              marginLeft: 8,
+            }}
+            hitSlop={8}
+          >
+            <Ionicons
+              name="notifications-outline"
+              size={24}
+              color={urgentProblems.length > 0 ? colors.destructive.DEFAULT : colors.muted.foreground}
+            />
+            {urgentProblems.length > 0 && (
               <View
                 style={{
                   position: "absolute",
                   top: 4,
                   right: 4,
-                  width: 18,
-                  height: 18,
-                  borderRadius: 9,
+                  width: 16,
+                  height: 16,
+                  borderRadius: 8,
                   backgroundColor: colors.destructive.DEFAULT,
                   alignItems: "center",
                   justifyContent: "center",
                 }}
               >
-                <Text style={{ color: "#fff", fontSize: 10, fontWeight: "700" }}>
+                <Text style={{ color: "#fff", fontSize: 9, fontWeight: "700" }}>
                   {urgentProblems.length}
                 </Text>
               </View>
-            </Pressable>
-          )}
+            )}
+          </Pressable>
         </Animated.View>
 
         {/* Week Strip */}
