@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "@/providers/ThemeProvider";
 import { useAuthStore, useHouseholdStore } from "@/stores";
 import { useItems } from "@/hooks/useItems";
 import { useRoutines, useToggleRoutine } from "@/hooks/useRoutines";
@@ -52,8 +53,10 @@ function getTimeGreetingKey(): string {
 export default function DashboardScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { isDark } = useTheme();
   const { user } = useAuthStore();
   const { members } = useHouseholdStore();
+  const mutedFg = isDark ? colors.muted.foregroundDark : colors.muted.foreground;
   const { fetchHousehold } = useHousehold();
   const toggleMutation = useToggleRoutine();
 
@@ -238,7 +241,8 @@ export default function DashboardScreen() {
           {/* Greeting text */}
           <View style={{ flex: 1 }}>
             <Text
-              style={{ fontSize: 13, color: colors.muted.foreground }}
+              style={{ fontSize: 13 }}
+              className="text-muted-foreground dark:text-muted-foreground-dark"
             >
               {t(getTimeGreetingKey())}
             </Text>
@@ -270,7 +274,7 @@ export default function DashboardScreen() {
                 <Ionicons
                   name="notifications-outline"
                   size={24}
-                  color={hasOverdue ? colors.destructive.DEFAULT : colors.muted.foreground}
+                  color={hasOverdue ? colors.destructive.DEFAULT : mutedFg}
                 />
                 {alertCount > 0 && (
                   <View
@@ -481,6 +485,9 @@ function DashboardTaskRow({
   onToggle: () => void;
   onPress: () => void;
 }) {
+  const { isDark } = useTheme();
+  const mutedFg = isDark ? colors.muted.foregroundDark : colors.muted.foreground;
+  const borderColor = isDark ? colors.border.dark : colors.border.DEFAULT;
   const TaskIcon = getTaskIcon(task.icon);
   const streak = getStreak(task.completions ?? []);
   const assigneeName = task.assigned_to
@@ -502,7 +509,7 @@ function DashboardTaskRow({
           height: 32,
           borderRadius: 16,
           borderWidth: 2,
-          borderColor: isCompleted ? colors.success.DEFAULT : colors.border.DEFAULT,
+          borderColor: isCompleted ? colors.success.DEFAULT : borderColor,
           backgroundColor: isCompleted ? colors.success.DEFAULT : "transparent",
           alignItems: "center",
           justifyContent: "center",
@@ -533,14 +540,13 @@ function DashboardTaskRow({
               fontSize: 15,
               fontWeight: "500",
               textDecorationLine: isCompleted ? "line-through" : "none",
-              color: isCompleted ? colors.muted.foreground : colors.foreground.DEFAULT,
             }}
-            className={isCompleted ? "text-muted-foreground" : "text-foreground dark:text-foreground-dark"}
+            className={isCompleted ? "text-muted-foreground dark:text-muted-foreground-dark" : "text-foreground dark:text-foreground-dark"}
           >
             {task.title}
           </Text>
           {assigneeName && (
-            <Text style={{ fontSize: 12, color: colors.muted.foreground, marginTop: 2 }}>
+            <Text style={{ fontSize: 12, marginTop: 2 }} className="text-muted-foreground dark:text-muted-foreground-dark">
               {assigneeName}
             </Text>
           )}
@@ -553,7 +559,7 @@ function DashboardTaskRow({
         <Ionicons
           name="chevron-forward"
           size={18}
-          color={colors.muted.foreground}
+          color={mutedFg}
           style={{ marginLeft: 4 }}
         />
       </Pressable>
@@ -587,7 +593,7 @@ function DashboardItemRow({
       icon={{ icon: typeIcon, color: priorityColor }}
       title={item.name}
       subtitle={
-        <Text style={{ fontSize: 12, color: colors.muted.foreground }}>
+        <Text style={{ fontSize: 12 }} className="text-muted-foreground dark:text-muted-foreground-dark">
           {t(`items.${item.type}`)}
           {priceStr}
         </Text>
@@ -623,9 +629,10 @@ function DashboardReminderRow({
         <Text
           style={{
             fontSize: 12,
-            color: isOverdue ? colors.destructive.DEFAULT : colors.muted.foreground,
             fontWeight: isOverdue ? "600" : "400",
+            ...(isOverdue ? { color: colors.destructive.DEFAULT } : {}),
           }}
+          className={isOverdue ? "" : "text-muted-foreground dark:text-muted-foreground-dark"}
         >
           {format(new Date(reminder.due_at), "MMM d, HH:mm")}
         </Text>

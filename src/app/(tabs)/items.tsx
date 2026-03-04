@@ -51,7 +51,7 @@ function ItemRowContent({ item, onPress, t }: { item: HouseholdItem; onPress: ()
       title={item.name}
       strikethrough={item.status === "done"}
       subtitle={
-        <Text style={{ fontSize: 12, color: colors.muted.foreground }}>
+        <Text style={{ fontSize: 12 }} className="text-muted-foreground dark:text-muted-foreground-dark">
           {subtitleText}
         </Text>
       }

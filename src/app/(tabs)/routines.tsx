@@ -15,6 +15,7 @@ import { getTaskIcon } from "@/utils/task-icons";
 import { Badge } from "@/components/ui/Badge";
 import { StreakIndicator } from "@/components/ui/StreakIndicator";
 import { SkeletonListRow } from "@/components/ui/Skeleton";
+import { useTheme } from "@/providers/ThemeProvider";
 import { colors } from "@/styles/colors";
 import type { RoutineTaskWithCompletions } from "@/domain/models";
 
@@ -44,6 +45,9 @@ function TaskRowContent({
     setOptimistic(null);
   }
 
+  const { isDark } = useTheme();
+  const mutedFg = isDark ? colors.muted.foregroundDark : colors.muted.foreground;
+  const borderColor = isDark ? colors.border.dark : colors.border.DEFAULT;
   const TaskIcon = getTaskIcon(task.icon);
 
   const subtitleParts: string[] = [];
@@ -64,7 +68,7 @@ function TaskRowContent({
           height: 28,
           borderRadius: 14,
           borderWidth: 2,
-          borderColor: isCompleted ? colors.success.DEFAULT : colors.border.DEFAULT,
+          borderColor: isCompleted ? colors.success.DEFAULT : borderColor,
           backgroundColor: isCompleted ? colors.success.DEFAULT : "transparent",
           alignItems: "center",
           justifyContent: "center",
@@ -91,17 +95,16 @@ function TaskRowContent({
                 fontWeight: "500",
                 flex: 1,
                 textDecorationLine: isCompleted ? "line-through" : "none",
-                color: isCompleted ? colors.muted.foreground : colors.foreground.DEFAULT,
               }}
-              className={isCompleted ? "text-muted-foreground" : "text-foreground dark:text-foreground-dark"}
+              className={isCompleted ? "text-muted-foreground dark:text-muted-foreground-dark" : "text-foreground dark:text-foreground-dark"}
             >
               {task.title}
             </Text>
             <Badge label={t(`routines.${task.recurrence}`)} variant="muted" />
           </View>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 2 }}>
-            <TaskIcon size={12} color={colors.muted.foreground} />
-            <Text style={{ fontSize: 12, color: colors.muted.foreground }}>
+            <TaskIcon size={12} color={mutedFg} />
+            <Text style={{ fontSize: 12 }} className="text-muted-foreground dark:text-muted-foreground-dark">
               {subtitleParts.join(" · ")}
             </Text>
           </View>
@@ -109,7 +112,7 @@ function TaskRowContent({
         <View style={{ marginLeft: 8 }}>
           <StreakIndicator streak={streak} />
         </View>
-        <Ionicons name="chevron-forward" size={18} color={colors.muted.foreground} style={{ marginLeft: 4 }} />
+        <Ionicons name="chevron-forward" size={18} color={mutedFg} style={{ marginLeft: 4 }} />
       </Pressable>
     </View>
   );
