@@ -22,8 +22,9 @@ import { useTheme } from '@/providers/ThemeProvider';
 
 // Configurações de estilo - customize aqui
 const TAB_BAR_CONFIG = {
-  height: 76,
+  minHeight: 76,
   borderRadius: 36,
+  paddingVertical: 10,
   marginHorizontal: 24,
   marginBottom: 34,
   paddingHorizontal: 8,
@@ -46,9 +47,10 @@ export function FloatingTabBar({ state, descriptors, navigation }: FloatingTabBa
         style={[
           styles.tabBar,
           {
-            height: TAB_BAR_CONFIG.height,
+            minHeight: TAB_BAR_CONFIG.minHeight,
             borderRadius: TAB_BAR_CONFIG.borderRadius,
             paddingHorizontal: TAB_BAR_CONFIG.paddingHorizontal,
+            paddingVertical: TAB_BAR_CONFIG.paddingVertical,
             backgroundColor,
             borderColor,
             shadowOpacity,
