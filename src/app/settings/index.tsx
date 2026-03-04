@@ -35,11 +35,28 @@ export default function SettingsScreen() {
   const otherMembers = members.filter((m) => m.user_id !== user?.id);
 
   const handleDeleteAccount = () => {
-    if (!isOwner() || !activeHouseholdId) {
-      // Not an owner — just confirm and delete
+    if (!activeHouseholdId) {
+      // No household — just confirm and delete
       Alert.alert(t("auth.deleteAccount"), t("auth.deleteAccountConfirm"), [
         { text: t("common.cancel"), style: "cancel" },
-        { text: t("auth.deleteAccount"), style: "destructive", onPress: deleteAccount },
+        { text: t("auth.deleteAccount"), style: "destructive", onPress: async () => {
+          try { await deleteAccount(); } catch { toast.error(t("error.generic")); }
+        }},
+      ]);
+      return;
+    }
+
+    if (!isOwner()) {
+      // Member (not owner) — leave household first, then delete
+      Alert.alert(t("auth.deleteAccount"), t("auth.deleteAccountConfirm"), [
+        { text: t("common.cancel"), style: "cancel" },
+        { text: t("auth.deleteAccount"), style: "destructive", onPress: async () => {
+          try {
+            const httpClient = getHttpClient();
+            await httpClient.post(API.household(activeHouseholdId).members.leave);
+            await deleteAccount();
+          } catch { toast.error(t("error.generic")); }
+        }},
       ]);
       return;
     }
