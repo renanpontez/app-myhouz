@@ -189,56 +189,50 @@ export default function DashboardScreen() {
           <SkeletonDashboard />
         ) : (
         <>
-        {/* Greeting */}
-        <Animated.View entering={FadeIn.duration(300)} className="pt-4 pb-4">
-          <Text className="text-sm text-muted-foreground">
-            {household?.name}
-          </Text>
-          <Text className="text-2xl font-bold text-foreground dark:text-foreground-dark">
-            {t("dashboard.greeting", { name: displayName })}
-          </Text>
-        </Animated.View>
-
-        {/* Urgent Banner */}
-        {urgentProblems.length > 0 && (
-          <Pressable
-            style={{ backgroundColor: colors.primary.DEFAULT }}
-            className="rounded-2xl p-4 mb-4"
-            onPress={() => router.push("/urgent/")}
-          >
-            <View className="flex-row items-center mb-2">
-              <Ionicons name="alert-circle" size={20} color="#fff" />
-              <Text
-                style={{ color: "#fff", fontWeight: "700", fontSize: 14, marginLeft: 8 }}
-              >
-                {t("dashboard.urgentProblems")}
-              </Text>
-              <View style={{ flex: 1 }} />
-              <Ionicons name="chevron-forward" size={18} color="#fff" />
-            </View>
-            {urgentProblems.slice(0, 3).map((problem) => (
-              <Text
-                key={problem.id}
-                style={{ color: "rgba(255,255,255,0.85)", fontSize: 13, marginLeft: 28 }}
-                numberOfLines={1}
-              >
-                {problem.title}
-              </Text>
-            ))}
-            {urgentProblems.length > 3 && (
-              <Text
+        {/* Greeting + Urgent alert */}
+        <Animated.View entering={FadeIn.duration(300)} className="pb-4 flex-row items-center justify-between">
+          <View style={{ flex: 1 }}>
+            <Text className="text-sm text-muted-foreground">
+              {household?.name}
+            </Text>
+            <Text className="text-2xl font-bold text-foreground dark:text-foreground-dark">
+              {t("dashboard.greeting", { name: displayName })}
+            </Text>
+          </View>
+          {urgentProblems.length > 0 && (
+            <Pressable
+              onPress={() => router.push("/urgent/")}
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 20,
+                backgroundColor: colors.destructive.DEFAULT + "18",
+                alignItems: "center",
+                justifyContent: "center",
+                marginLeft: 12,
+              }}
+            >
+              <Ionicons name="alert-circle" size={24} color={colors.destructive.DEFAULT} />
+              <View
                 style={{
-                  color: "rgba(255,255,255,0.7)",
-                  fontSize: 12,
-                  marginLeft: 28,
-                  marginTop: 2,
+                  position: "absolute",
+                  top: 4,
+                  right: 4,
+                  width: 18,
+                  height: 18,
+                  borderRadius: 9,
+                  backgroundColor: colors.destructive.DEFAULT,
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
-                +{urgentProblems.length - 3} {t("dashboard.viewAll").toLowerCase()}
-              </Text>
-            )}
-          </Pressable>
-        )}
+                <Text style={{ color: "#fff", fontSize: 10, fontWeight: "700" }}>
+                  {urgentProblems.length}
+                </Text>
+              </View>
+            </Pressable>
+          )}
+        </Animated.View>
 
         {/* Week Strip */}
         <WeekStrip
