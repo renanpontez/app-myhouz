@@ -22,7 +22,7 @@ import { useTheme } from '@/providers/ThemeProvider';
 
 // Configurações de estilo - customize aqui
 const TAB_BAR_CONFIG = {
-  height: 72,
+  height: 76,
   borderRadius: 36,
   marginHorizontal: 24,
   marginBottom: 34,
@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 8,
+    paddingVertical: 12,
   },
   tabItem: {
     flexDirection: 'row',
