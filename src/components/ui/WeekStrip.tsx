@@ -157,8 +157,8 @@ export function WeekStrip({
           let numberColor = colors.muted.foreground;
           let labelColor = colors.muted.foreground;
 
-          // Ring color: green when all done, yellow for partial, primary when selected
-          let ringColor = colors.warning.DEFAULT;
+          // Ring color: green when all done, primary 30% for partial/default
+          let ringColor = colors.primary.DEFAULT + "4D";
           if (allDone) ringColor = colors.success.DEFAULT;
 
           if (isSelected) {
