@@ -415,14 +415,6 @@ export default function DashboardScreen() {
           <SectionHeader
             title={t("dashboard.reminders")}
             counter={`${reminders.length}`}
-            badge={
-              overdueCount > 0
-                ? {
-                    label: `${overdueCount} ${t("dashboard.overdue").toLowerCase()}`,
-                    variant: "destructive",
-                  }
-                : undefined
-            }
           />
           {reminders.length === 0 ? (
             <View className="bg-card dark:bg-card-dark rounded-2xl p-4 border border-border dark:border-border-dark items-center">
