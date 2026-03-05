@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, TextInput, Pressable, ActivityIndicator, ScrollView } from "react-native";
+import { View, Text, TextInput, Pressable, ActivityIndicator, ScrollView, Switch } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
@@ -8,6 +8,7 @@ import { MemberPicker } from "@/components/ui/MemberPicker";
 import { DateTimePicker } from "@/components/ui/DateTimePicker";
 import { DayOfWeekPicker } from "@/components/ui/DayOfWeekPicker";
 import { toast } from "@/stores/toast.store";
+import { colors } from "@/styles/colors";
 import type { RecurrenceType, RecurrenceMeta } from "@/domain/models";
 
 const RECURRENCES: RecurrenceType[] = ["daily", "weekly", "monthly", "weekdays", "weekends", "custom"];
@@ -22,6 +23,7 @@ export default function NewRoutineScreen() {
   const [title, setTitle] = useState("");
   const [recurrence, setRecurrence] = useState<RecurrenceType>("daily");
   const [assignedTo, setAssignedTo] = useState<string | null>(null);
+  const [hasStartDate, setHasStartDate] = useState(!!startsAtParam);
   const [startsAt, setStartsAt] = useState<Date | null>(() => {
     if (!startsAtParam) return null;
     const [y, m, d] = startsAtParam.split("-");
@@ -59,7 +61,7 @@ export default function NewRoutineScreen() {
         recurrence,
         recurrence_meta: buildRecurrenceMeta(),
         assigned_to: assignedTo || undefined,
-        starts_at: startsAt?.toISOString() ?? undefined,
+        starts_at: startsAt ? `${startsAt.getFullYear()}-${String(startsAt.getMonth() + 1).padStart(2, "0")}-${String(startsAt.getDate()).padStart(2, "0")}` : undefined,
       };
       await createRoutine.mutateAsync(payload);
       router.dismiss();
@@ -178,13 +180,37 @@ export default function NewRoutineScreen() {
             label={t("routines.assignedTo")}
           />
 
-          <DateTimePicker
-            value={startsAt}
-            onChange={setStartsAt}
-            mode="date"
-            label={t("routines.startsAt")}
-            placeholder={t("routines.startsAt")}
-          />
+          <View>
+            <Pressable
+              onPress={() => {
+                const next = !hasStartDate;
+                setHasStartDate(next);
+                if (!next) setStartsAt(null);
+              }}
+              className="flex-row items-center justify-between"
+            >
+              <Text className="text-sm text-muted-foreground">{t("routines.addStartDate")}</Text>
+              <Switch
+                value={hasStartDate}
+                onValueChange={(v) => {
+                  setHasStartDate(v);
+                  if (!v) setStartsAt(null);
+                }}
+                trackColor={{ true: colors.primary.DEFAULT }}
+              />
+            </Pressable>
+            {hasStartDate && (
+              <View className="mt-3">
+                <DateTimePicker
+                  value={startsAt}
+                  onChange={setStartsAt}
+                  mode="date"
+                  label=""
+                  placeholder={t("routines.startsAt")}
+                />
+              </View>
+            )}
+          </View>
         </View>
 
         <Pressable

@@ -75,6 +75,7 @@ export const STORAGE_KEYS = {
   LANGUAGE: '@app/language',
   ONBOARDING_COMPLETED: '@app/onboarding_completed',
   LAST_EMAIL: '@auth/last_email',
+  DISMISSED_INVITE_NOTIF: '@app/dismissed_invite_notif',
 } as const;
 
 export type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS];

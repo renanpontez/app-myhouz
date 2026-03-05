@@ -153,6 +153,7 @@ const enUS = {
     every: "Every",
     completionHistory: "Recent completions",
     createdBy: "Created by",
+    addStartDate: "Add a starting date",
   },
 
   reminders: {
@@ -231,13 +232,31 @@ const enUS = {
 
   onboarding: {
     title: "Let's get started!",
+    subtitle: "How would you like to start?",
     createHousehold: "Create a household",
-    joinHousehold: "Join a household",
+    createDesc: "Start fresh with your own household",
+    joinHousehold: "Join with code",
+    joinDesc: "Someone invited you",
+    continue: "Continue",
     householdName: "Your household name",
+    namePlaceholder: "e.g. The Smiths",
     createButton: "Create Household",
     joinWithCode: "I have an invite code",
-    enterCode: "Enter code",
+    enterCode: "Enter invite code",
     joinButton: "Join",
+    back: "Back",
+    invalidCode: "This invite code is invalid",
+    expiredCode: "This invite code has expired",
+    codeNotFound: "Invite code not found",
+    householdCreated: "Your household is ready!",
+  },
+
+  notifications: {
+    title: "Notifications",
+    inviteMembers: "Invite someone to your house",
+    inviteMembersDesc: "Share your household with family or roommates",
+    overdueReminder: "Overdue",
+    empty: "No notifications",
   },
 
   error: {

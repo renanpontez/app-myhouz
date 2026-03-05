@@ -241,6 +241,20 @@ export function WeekStrip({
                   </Text>
                 </View>
               </View>
+
+              {/* Today dot — reserve space on all days to prevent layout shift */}
+              <View style={{ height: 9, marginTop: 4, alignItems: "center", justifyContent: "center" }}>
+                {isDayToday && !isSelected && (
+                  <View
+                    style={{
+                      width: 5,
+                      height: 5,
+                      borderRadius: 3,
+                      backgroundColor: colors.primary.DEFAULT,
+                    }}
+                  />
+                )}
+              </View>
             </Pressable>
           );
         })}

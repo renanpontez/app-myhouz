@@ -158,6 +158,7 @@ const ptBR = {
     every: "A cada",
     completionHistory: "Conclusões recentes",
     createdBy: "Criado por",
+    addStartDate: "Adicionar data de início",
   },
 
   // Reminders
@@ -241,16 +242,34 @@ const ptBR = {
   // Onboarding
   onboarding: {
     title: "Vamos começar!",
+    subtitle: "Como você gostaria de começar?",
     createHousehold: "Criar uma casa",
-    joinHousehold: "Entrar em uma casa",
+    createDesc: "Comece do zero com sua própria casa",
+    joinHousehold: "Entrar com código",
+    joinDesc: "Alguém te convidou",
+    continue: "Continuar",
     householdName: "Nome da sua casa",
+    namePlaceholder: "ex: Família Silva",
     createButton: "Criar Casa",
     joinWithCode: "Tenho um código de convite",
-    enterCode: "Digite o código",
+    enterCode: "Digite o código de convite",
     joinButton: "Entrar",
+    back: "Voltar",
+    invalidCode: "Este código de convite é inválido",
+    expiredCode: "Este código de convite expirou",
+    codeNotFound: "Código de convite não encontrado",
+    householdCreated: "Sua casa está pronta!",
   },
 
   // Errors
+  notifications: {
+    title: "Notificações",
+    inviteMembers: "Convide alguém para sua casa",
+    inviteMembersDesc: "Compartilhe sua casa com família ou colegas",
+    overdueReminder: "Atrasado",
+    empty: "Nenhuma notificação",
+  },
+
   error: {
     generic: "Algo deu errado",
     network: "Erro de conexão",
