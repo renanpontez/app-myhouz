@@ -9,7 +9,7 @@ import { useState, useCallback, useMemo, useRef } from "react";
 import { useFocusEffect } from "expo-router";
 import { useRoutines, useToggleRoutine } from "@/hooks/useRoutines";
 import { useHouseholdStore } from "@/stores";
-import { isActiveToday, isCompletedThisCycle, getStreak } from "@/utils/cycle";
+import { isActiveOnDate, isCompletedThisCycle, getStreak } from "@/utils/cycle";
 import { formatDisplayName } from "@/utils/format";
 import { getTaskIcon } from "@/utils/task-icons";
 import { Badge } from "@/components/ui/Badge";
@@ -139,7 +139,7 @@ export default function RoutinesScreen() {
   const routines = data?.data?.data ?? [];
 
   const displayTasks = viewMode === "today"
-    ? routines.filter((task) => task.is_active && isActiveToday(task.recurrence, task.recurrence_meta))
+    ? routines.filter((task) => task.is_active && isActiveOnDate(task.recurrence, task.recurrence_meta, new Date(), task.starts_at, task.created_at))
     : routines.filter((task) => task.is_active);
 
   const memberNameMap = useMemo(() => {

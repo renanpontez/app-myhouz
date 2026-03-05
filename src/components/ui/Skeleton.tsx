@@ -228,54 +228,114 @@ function SkeletonSectionHeader() {
         marginTop: 8,
       }}
     >
-      <Skeleton width={120} height={18} borderRadius={6} />
-      <Skeleton width={40} height={14} borderRadius={6} />
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+        <Skeleton width={120} height={18} borderRadius={6} />
+        <Skeleton width={32} height={14} borderRadius={6} />
+      </View>
+      <Skeleton width={28} height={28} borderRadius={14} />
+    </View>
+  );
+}
+
+function SkeletonWeekStrip() {
+  return (
+    <View style={{ marginBottom: 16 }}>
+      {/* Week nav row */}
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "flex-end",
+          alignItems: "center",
+          marginBottom: 12,
+          gap: 8,
+        }}
+      >
+        <Skeleton width={16} height={16} borderRadius={4} />
+        <Skeleton width={100} height={14} borderRadius={6} />
+        <Skeleton width={16} height={16} borderRadius={4} />
+      </View>
+      {/* Day circles */}
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+        }}
+      >
+        {Array.from({ length: 7 }, (_, i) => (
+          <View key={i} style={{ alignItems: "center", gap: 6 }}>
+            <Skeleton width={28} height={10} borderRadius={4} />
+            <Skeleton width={40} height={40} borderRadius={20} />
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+}
+
+function SkeletonSectionCard() {
+  const { isDark } = useTheme();
+
+  return (
+    <View
+      style={{
+        borderRadius: 16,
+        padding: 16,
+        borderWidth: 1,
+        borderColor: isDark ? colors.border.dark : colors.border.DEFAULT,
+        backgroundColor: isDark ? colors.card.dark : colors.card.DEFAULT,
+        alignItems: "center",
+        paddingVertical: 24,
+      }}
+    >
+      <Skeleton width={140} height={12} borderRadius={6} />
     </View>
   );
 }
 
 export function SkeletonDashboard() {
   return (
-    <View style={{ paddingHorizontal: 20, paddingBottom: 32 }}>
-      {/* Greeting */}
-      <View style={{ paddingTop: 16, paddingBottom: 16 }}>
-        <Skeleton width={100} height={12} borderRadius={6} />
-        <Skeleton
-          width="65%"
-          height={24}
-          borderRadius={8}
-          style={{ marginTop: 6 }}
-        />
+    <View style={{ paddingBottom: 32 }}>
+      {/* Header: Avatar + Greeting + Bell */}
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          paddingBottom: 16,
+          paddingTop: 4,
+        }}
+      >
+        <Skeleton width={48} height={48} borderRadius={24} />
+        <View style={{ flex: 1, marginLeft: 12 }}>
+          <Skeleton width={90} height={12} borderRadius={6} />
+          <Skeleton
+            width={120}
+            height={22}
+            borderRadius={8}
+            style={{ marginTop: 6 }}
+          />
+        </View>
+        <Skeleton width={24} height={24} borderRadius={12} />
       </View>
 
-      {/* Week strip area */}
-      <Skeleton
-        width="100%"
-        height={100}
-        borderRadius={16}
-        style={{ marginBottom: 16 }}
-      />
+      {/* Week strip */}
+      <SkeletonWeekStrip />
 
       {/* Today's Tasks */}
       <View style={{ marginBottom: 16 }}>
         <SkeletonSectionHeader />
-        <SkeletonListRow />
-        <SkeletonListRow />
-        <SkeletonListRow />
+        <SkeletonSectionCard />
       </View>
 
       {/* Items */}
       <View style={{ marginBottom: 16 }}>
         <SkeletonSectionHeader />
-        <SkeletonListRow />
-        <SkeletonListRow />
+        <SkeletonSectionCard />
       </View>
 
       {/* Reminders */}
       <View style={{ marginBottom: 16 }}>
         <SkeletonSectionHeader />
-        <SkeletonListRow />
-        <SkeletonListRow />
+        <SkeletonSectionCard />
       </View>
     </View>
   );

@@ -76,6 +76,9 @@ module.exports = {
           900: "#1c1c1c",
         },
       },
+      maxWidth: {
+        form: "360px",
+      },
       fontFamily: {
         sans: ["System"],
       },

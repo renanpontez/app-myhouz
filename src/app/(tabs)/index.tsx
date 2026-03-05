@@ -26,6 +26,7 @@ import { Badge } from "@/components/ui/Badge";
 import { StreakIndicator } from "@/components/ui/StreakIndicator";
 import { SkeletonDashboard } from "@/components/ui/Skeleton";
 import { colors } from "@/styles/colors";
+import { storageService, STORAGE_KEYS } from "@/data/storage";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useFocusEffect } from "expo-router";
 import {
@@ -64,6 +65,7 @@ export default function DashboardScreen() {
   const routinesQuery = useRoutines();
   const remindersQuery = useReminders({ status: "active" });
   const urgentQuery = useUrgentProblems({ active: true });
+
 
   // Store refetch fns in a ref so useFocusEffect has stable deps
   const refetchRef = useRef({ routines: routinesQuery.refetch, items: itemsQuery.refetch, reminders: remindersQuery.refetch, urgent: urgentQuery.refetch });
@@ -150,7 +152,7 @@ export default function DashboardScreen() {
       const activeTasks = routines.filter(
         (task) =>
           task.is_active &&
-          isActiveOnDate(task.recurrence, task.recurrence_meta, day),
+          isActiveOnDate(task.recurrence, task.recurrence_meta, day, task.starts_at, task.created_at),
       );
       const done = activeTasks.filter((task) => isTaskDoneOnDay(task, day)).length;
       return { total: activeTasks.length, done };
@@ -162,7 +164,7 @@ export default function DashboardScreen() {
     return routines.filter(
       (task) =>
         task.is_active &&
-        isActiveOnDate(task.recurrence, task.recurrence_meta, selectedDay),
+        isActiveOnDate(task.recurrence, task.recurrence_meta, selectedDay, task.starts_at, task.created_at),
     );
   }, [routines, selectedDay]);
 
@@ -173,20 +175,27 @@ export default function DashboardScreen() {
   const isSelectedToday = isSameDay(selectedDay, new Date());
   const isSelectedTodayOrFuture = isSelectedToday || selectedDay > new Date();
 
-  // Overdue reminders count
-  const overdueCount = useMemo(
-    () =>
-      reminders.filter(
-        (r) => !r.is_completed && isPast(new Date(r.due_at)),
-      ).length,
+  // Overdue reminders
+  const overdueReminders = useMemo(
+    () => reminders.filter((r) => !r.is_completed && isPast(new Date(r.due_at))),
     [reminders],
   );
+  const overdueCount = overdueReminders.length;
+
+  // Notification dropdown
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [bellLayout, setBellLayout] = useState({ y: 0, height: 0 });
+  const isSoleMember = members.length <= 1;
+  const [inviteNotifDismissed, setInviteNotifDismissed] = useState(
+    () => storageService.getBoolean(STORAGE_KEYS.DISMISSED_INVITE_NOTIF) ?? false,
+  );
+  const showInviteNotif = isSoleMember && !inviteNotifDismissed;
 
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
       <ScrollView
         className="flex-1"
-        contentContainerClassName="px-5 pb-8"
+        contentContainerClassName="px-5 pt-2 pb-8"
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -255,28 +264,32 @@ export default function DashboardScreen() {
           </View>
 
           {/* Notification bell */}
-          {(() => {
-            const alertCount = reminders.length + urgentProblems.length;
-            const hasOverdue = overdueCount > 0 || urgentProblems.length > 0;
-            return (
-              <Pressable
-                onPress={() => router.push("/reminders/")}
-                style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 20,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  marginLeft: 8,
-                }}
-                hitSlop={8}
-              >
-                <Ionicons
-                  name="notifications-outline"
-                  size={24}
-                  color={hasOverdue ? colors.destructive.DEFAULT : mutedFg}
-                />
-                {alertCount > 0 && (
+          <View
+            onLayout={(e) => {
+              const { y, height } = e.nativeEvent.layout;
+              setBellLayout({ y, height });
+            }}
+          >
+            <Pressable
+              onPress={() => setShowNotifications(true)}
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 20,
+                alignItems: "center",
+                justifyContent: "center",
+                marginLeft: 8,
+              }}
+              hitSlop={8}
+            >
+              <Ionicons
+                name="notifications-outline"
+                size={24}
+                color={overdueCount > 0 ? colors.destructive.DEFAULT : mutedFg}
+              />
+              {(() => {
+                const notifCount = overdueCount + (showInviteNotif ? 1 : 0);
+                return notifCount > 0 ? (
                   <View
                     style={{
                       position: "absolute",
@@ -286,19 +299,19 @@ export default function DashboardScreen() {
                       height: 18,
                       borderRadius: 9,
                       paddingHorizontal: 4,
-                      backgroundColor: hasOverdue ? colors.destructive.DEFAULT : colors.primary.DEFAULT,
+                      backgroundColor: overdueCount > 0 ? colors.destructive.DEFAULT : colors.primary.DEFAULT,
                       alignItems: "center",
                       justifyContent: "center",
                     }}
                   >
                     <Text style={{ color: "#fff", fontSize: 10, fontWeight: "700" }}>
-                      {alertCount}
+                      {notifCount}
                     </Text>
                   </View>
-                )}
-              </Pressable>
-            );
-          })()}
+                ) : null;
+              })()}
+            </Pressable>
+          </View>
         </Animated.View>
 
         {/* Week Strip */}
@@ -369,6 +382,7 @@ export default function DashboardScreen() {
                       });
                     }}
                     onPress={() => router.push(`/routines/${task.id}`)}
+                    recurrenceLabel={t(`routines.${task.recurrence}`)}
                   />
                 );
               })}
@@ -466,6 +480,175 @@ export default function DashboardScreen() {
         </>
         )}
       </ScrollView>
+
+      {/* Notification Dropdown */}
+      {showNotifications && (
+        <Pressable
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 100,
+          }}
+          onPress={() => setShowNotifications(false)}
+        >
+          <View
+            style={{
+              position: "absolute",
+              top: bellLayout.y + bellLayout.height + 8,
+              right: 16,
+              width: 340,
+              borderRadius: 16,
+              backgroundColor: isDark ? colors.card.dark : colors.card.DEFAULT,
+              borderWidth: 1,
+              borderColor: isDark ? colors.border.dark : colors.border.DEFAULT,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.15,
+              shadowRadius: 12,
+              elevation: 8,
+              overflow: "hidden",
+            }}
+          >
+                {/* Header */}
+                <View
+                  style={{
+                    paddingHorizontal: 16,
+                    paddingVertical: 12,
+                    borderBottomWidth: 1,
+                    borderBottomColor: isDark ? colors.border.dark : colors.border.DEFAULT,
+                  }}
+                >
+                  <Text
+                    style={{ fontSize: 15, fontWeight: "700" }}
+                    className="text-foreground dark:text-foreground-dark"
+                  >
+                    {t("notifications.title")}
+                  </Text>
+                </View>
+
+                {/* Notification items */}
+                {showInviteNotif && (
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      paddingHorizontal: 16,
+                      paddingVertical: 12,
+                      gap: 12,
+                      borderBottomWidth: overdueReminders.length > 0 ? 1 : 0,
+                      borderBottomColor: isDark ? colors.border.dark : colors.border.DEFAULT,
+                    }}
+                  >
+                    <Pressable
+                      onPress={() => {
+                        setShowNotifications(false);
+                        router.push("/members");
+                      }}
+                      style={{ flexDirection: "row", alignItems: "center", gap: 12, flex: 1 }}
+                    >
+                      <View
+                        style={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: 16,
+                          backgroundColor: colors.primary.DEFAULT + "18",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <Ionicons name="people-outline" size={16} color={colors.primary.DEFAULT} />
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text
+                          style={{ fontSize: 13, fontWeight: "600" }}
+                          className="text-foreground dark:text-foreground-dark"
+                        >
+                          {t("notifications.inviteMembers")}
+                        </Text>
+                        <Text
+                          style={{ fontSize: 12, marginTop: 2 }}
+                          className="text-muted-foreground"
+                        >
+                          {t("notifications.inviteMembersDesc")}
+                        </Text>
+                      </View>
+                    </Pressable>
+                    <Pressable
+                      onPress={() => {
+                        storageService.setBoolean(STORAGE_KEYS.DISMISSED_INVITE_NOTIF, true);
+                        setInviteNotifDismissed(true);
+                      }}
+                      hitSlop={8}
+                    >
+                      <Ionicons name="close" size={16} color={mutedFg} />
+                    </Pressable>
+                  </View>
+                )}
+
+                {overdueReminders.map((reminder) => (
+                  <Pressable
+                    key={reminder.id}
+                    onPress={() => {
+                      setShowNotifications(false);
+                      router.push(`/reminders/${reminder.id}` as any);
+                    }}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      paddingHorizontal: 16,
+                      paddingVertical: 12,
+                      gap: 12,
+                      borderBottomWidth: 1,
+                      borderBottomColor: isDark ? colors.border.dark : colors.border.DEFAULT,
+                    }}
+                  >
+                    <View
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 16,
+                        backgroundColor: colors.destructive.DEFAULT + "18",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Ionicons name="alarm-outline" size={16} color={colors.destructive.DEFAULT} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text
+                        style={{ fontSize: 13, fontWeight: "600" }}
+                        className="text-foreground dark:text-foreground-dark"
+                        numberOfLines={1}
+                      >
+                        {reminder.title}
+                      </Text>
+                      <Text
+                        style={{ fontSize: 12, marginTop: 2 }}
+                        className="text-destructive"
+                      >
+                        {t("notifications.overdueReminder")}
+                      </Text>
+                    </View>
+                  </Pressable>
+                ))}
+
+                {/* Empty state */}
+                {!showInviteNotif && overdueReminders.length === 0 && (
+                  <View style={{ paddingHorizontal: 16, paddingVertical: 24, alignItems: "center" }}>
+                    <Text
+                      style={{ fontSize: 13 }}
+                      className="text-muted-foreground"
+                    >
+                      {t("notifications.empty")}
+                    </Text>
+                  </View>
+                )}
+          </View>
+        </Pressable>
+      )}
     </SafeAreaView>
   );
 }
@@ -478,12 +661,14 @@ function DashboardTaskRow({
   memberNameMap,
   onToggle,
   onPress,
+  recurrenceLabel,
 }: {
   task: RoutineTaskWithCompletions;
   isCompleted: boolean;
   memberNameMap: Map<string, string>;
   onToggle: () => void;
   onPress: () => void;
+  recurrenceLabel: string;
 }) {
   const { isDark } = useTheme();
   const mutedFg = isDark ? colors.muted.foregroundDark : colors.muted.foreground;
@@ -545,11 +730,9 @@ function DashboardTaskRow({
           >
             {task.title}
           </Text>
-          {assigneeName && (
-            <Text style={{ fontSize: 12, marginTop: 2 }} className="text-muted-foreground dark:text-muted-foreground-dark">
-              {assigneeName}
-            </Text>
-          )}
+          <Text style={{ fontSize: 12, marginTop: 2 }} className="text-muted-foreground dark:text-muted-foreground-dark">
+            {recurrenceLabel}{assigneeName ? ` · ${assigneeName}` : ""}
+          </Text>
         </View>
         {streak > 0 && (
           <View style={{ marginLeft: 8 }}>

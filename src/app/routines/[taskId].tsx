@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { View, Text, TextInput, Pressable, ScrollView, Alert, ActivityIndicator } from "react-native";
+import { View, Text, TextInput, Pressable, ScrollView, Alert, ActivityIndicator, Switch } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
@@ -52,6 +52,7 @@ export default function RoutineDetailScreen() {
   const [editTitle, setEditTitle] = useState("");
   const [editRecurrence, setEditRecurrence] = useState<RecurrenceType>("daily");
   const [editAssignedTo, setEditAssignedTo] = useState<string | null>(null);
+  const [editHasStartDate, setEditHasStartDate] = useState(false);
   const [editStartsAt, setEditStartsAt] = useState<Date | null>(null);
   const [editCustomMode, setEditCustomMode] = useState<"days_of_week" | "interval">("days_of_week");
   const [editSelectedDays, setEditSelectedDays] = useState<number[]>([]);
@@ -63,6 +64,7 @@ export default function RoutineDetailScreen() {
     setEditTitle(task.title);
     setEditRecurrence(task.recurrence);
     setEditAssignedTo(task.assigned_to);
+    setEditHasStartDate(!!task.starts_at);
     setEditStartsAt(task.starts_at ? new Date(task.starts_at) : null);
     if (task.recurrence_meta?.type === "days_of_week") {
       setEditCustomMode("days_of_week");
@@ -94,7 +96,7 @@ export default function RoutineDetailScreen() {
         recurrence: editRecurrence,
         recurrence_meta: buildRecurrenceMeta(),
         assigned_to: editAssignedTo,
-        starts_at: editStartsAt?.toISOString() ?? null,
+        starts_at: editStartsAt ? `${editStartsAt.getFullYear()}-${String(editStartsAt.getMonth() + 1).padStart(2, "0")}-${String(editStartsAt.getDate()).padStart(2, "0")}` : null,
       });
       setIsEditing(false);
       toast.success(t("common.success"));
@@ -258,13 +260,37 @@ export default function RoutineDetailScreen() {
               label={t("routines.assignedTo")}
             />
 
-            <DateTimePicker
-              value={editStartsAt}
-              onChange={setEditStartsAt}
-              mode="date"
-              label={t("routines.startsAt")}
-              placeholder={t("routines.startsAt")}
-            />
+            <View>
+              <Pressable
+                onPress={() => {
+                  const next = !editHasStartDate;
+                  setEditHasStartDate(next);
+                  if (!next) setEditStartsAt(null);
+                }}
+                className="flex-row items-center justify-between"
+              >
+                <Text className="text-sm text-muted-foreground">{t("routines.addStartDate")}</Text>
+                <Switch
+                  value={editHasStartDate}
+                  onValueChange={(v) => {
+                    setEditHasStartDate(v);
+                    if (!v) setEditStartsAt(null);
+                  }}
+                  trackColor={{ true: colors.primary.DEFAULT }}
+                />
+              </Pressable>
+              {editHasStartDate && (
+                <View className="mt-3">
+                  <DateTimePicker
+                    value={editStartsAt}
+                    onChange={setEditStartsAt}
+                    mode="date"
+                    label=""
+                    placeholder={t("routines.startsAt")}
+                  />
+                </View>
+              )}
+            </View>
           </View>
 
           <Pressable
