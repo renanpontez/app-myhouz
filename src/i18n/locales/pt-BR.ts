@@ -75,6 +75,8 @@ const ptBR = {
     errorInvalidEmail: "Digite um e-mail válido.",
     welcomeBack: "Bem-vindo de volta!",
     createAccount: "Crie sua conta",
+    agreePrefix: "Ao criar sua conta, você concorda com os ",
+    termsAndPrivacy: "Termos de Uso e Política de Privacidade",
   },
 
   // Dashboard

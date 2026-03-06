@@ -73,6 +73,8 @@ const enUS = {
     errorInvalidEmail: "Please enter a valid email address.",
     welcomeBack: "Welcome back!",
     createAccount: "Create your account",
+    agreePrefix: "By signing up, you agree to our ",
+    termsAndPrivacy: "Terms of Use and Privacy Policy",
   },
 
   dashboard: {

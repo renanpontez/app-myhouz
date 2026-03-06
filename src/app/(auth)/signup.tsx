@@ -120,6 +120,16 @@ export default function SignUpScreen() {
               )}
             </Pressable>
 
+            <Text className="text-center text-xs text-muted-foreground mt-4 px-4">
+              {t("auth.agreePrefix")}
+              <Text
+                className="text-primary font-medium"
+                onPress={() => router.push("/legal")}
+              >
+                {t("auth.termsAndPrivacy")}
+              </Text>
+            </Text>
+
             <Pressable
               className="mt-6 items-center"
               onPress={() => router.push("/(auth)/signin")}
