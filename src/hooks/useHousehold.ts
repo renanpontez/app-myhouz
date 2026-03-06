@@ -23,7 +23,7 @@ interface HouseholdsResponse {
 }
 
 export function useHousehold() {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, isInitialized } = useAuthStore();
   const {
     activeHouseholdId,
     household,
@@ -91,11 +91,12 @@ export function useHousehold() {
   );
 
   // Auto-fetch household data when activeHouseholdId changes
+  // Gate on isInitialized to prevent 401s before auth session is ready
   useEffect(() => {
-    if (isAuthenticated && activeHouseholdId) {
+    if (isInitialized && isAuthenticated && activeHouseholdId) {
       fetchHousehold();
     }
-  }, [isAuthenticated, activeHouseholdId, fetchHousehold]);
+  }, [isInitialized, isAuthenticated, activeHouseholdId, fetchHousehold]);
 
   return {
     activeHouseholdId,

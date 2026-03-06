@@ -21,8 +21,9 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
     const inAuthGroup = segments[0] === "(auth)";
     const inOnboarding = segments[0] === "onboarding";
+    const inPublicRoute = segments[0] === "legal";
 
-    if (!isAuthenticated && !inAuthGroup) {
+    if (!isAuthenticated && !inAuthGroup && !inPublicRoute) {
       const savedEmail = getStorage().getString(STORAGE_KEYS.LAST_EMAIL);
       router.replace(savedEmail ? "/(auth)/signin" : "/(auth)/signup");
     } else if (isAuthenticated && inAuthGroup) {

@@ -64,6 +64,7 @@ function RootLayoutContent() {
         <Stack.Screen name="settings/index" />
         <Stack.Screen name="settings/household" />
         <Stack.Screen name="invite/[code]" />
+        <Stack.Screen name="legal" options={{ presentation: "modal", animation: "slide_from_bottom", gestureEnabled: true, gestureDirection: "vertical" }} />
       </Stack>
     </AuthGuard>
   );

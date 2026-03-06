@@ -1,9 +1,12 @@
 import { useQuery, useMutation, UseQueryOptions, UseMutationOptions } from '@tanstack/react-query';
 import { getHttpClient } from '@/core/config';
 import { HttpResponse } from '@/data/api';
+import { useAuthStore } from '@/stores';
 
 /**
- * Hook para fazer requisições GET com React Query
+ * Hook para fazer requisições GET com React Query.
+ * Automatically disabled until auth is initialized to prevent
+ * 401 errors from stale tokens on cold start.
  */
 export function useApiQuery<TData>(
   key: string[],
@@ -11,11 +14,13 @@ export function useApiQuery<TData>(
   options?: Omit<UseQueryOptions<HttpResponse<TData>, Error>, 'queryKey' | 'queryFn'>
 ) {
   const httpClient = getHttpClient();
+  const { isInitialized } = useAuthStore();
 
   return useQuery({
     queryKey: key,
     queryFn: () => httpClient.get<TData>(url),
     ...options,
+    enabled: isInitialized && (options?.enabled ?? true),
   });
 }
 
