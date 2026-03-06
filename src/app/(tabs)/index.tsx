@@ -61,7 +61,13 @@ export default function DashboardScreen() {
   const { fetchHousehold } = useHousehold();
   const toggleMutation = useToggleRoutine();
 
-  const itemsQuery = useItems({ status: "pending" });
+  // Tasks widget state
+  const [expandedTasks, setExpandedTasks] = useState(false);
+
+  // Add menu dropdown
+  const [showAddMenu, setShowAddMenu] = useState(false);
+
+  const itemsQuery = useItems({});
   const routinesQuery = useRoutines();
   const remindersQuery = useReminders({ status: "active" });
   const urgentQuery = useUrgentProblems({ active: true });
@@ -105,10 +111,16 @@ export default function DashboardScreen() {
     remindersQuery.isLoading &&
     urgentQuery.isLoading;
 
-  const pendingItems = itemsQuery.data?.data?.data ?? [];
+  const allItems = itemsQuery.data?.data?.data ?? [];
   const routines = routinesQuery.data?.data?.data ?? [];
   const reminders = remindersQuery.data?.data?.data ?? [];
   const urgentProblems = urgentQuery.data?.data?.data ?? [];
+
+  // Filter items: show pending + in_progress
+  const pendingItems = useMemo(
+    () => allItems.filter((item) => item.status !== "done"),
+    [allItems],
+  );
 
   const displayName = user?.name ? formatDisplayName(user.name) : "";
 
@@ -129,16 +141,16 @@ export default function DashboardScreen() {
     return map;
   }, [members]);
 
-  // Optimistic toggle overrides: taskId → toggled completed state
+  // Optimistic toggle overrides: "taskId:YYYY-MM-DD" → toggled completed state
   const [optimisticToggles, setOptimisticToggles] = useState<Map<string, boolean>>(new Map());
 
   // Helper: is a task completed on a given day, respecting optimistic overrides
   const isTaskDoneOnDay = useCallback(
     (task: (typeof routines)[0], day: Date) => {
-      // Optimistic overrides always apply for today (toggles are always for today)
+      const toggleKey = `${task.id}:${format(day, "yyyy-MM-dd")}`;
+      const override = optimisticToggles.get(toggleKey);
+      if (override !== undefined) return override;
       if (isSameDay(day, new Date())) {
-        const override = optimisticToggles.get(task.id);
-        if (override !== undefined) return override;
         return isCompletedThisCycle(task.last_completed_at, task.recurrence, task.recurrence_meta);
       }
       return hasCompletionOnDate(task.completions ?? [], day);
@@ -159,21 +171,50 @@ export default function DashboardScreen() {
     });
   }, [weekDays, routines, isTaskDoneOnDay]);
 
-  // Today's tasks for selected day
+  // Today's tasks for selected day — with smart sorting
   const selectedDayTasks = useMemo(() => {
-    return routines.filter(
+    const tasks = routines.filter(
       (task) =>
         task.is_active &&
         isActiveOnDate(task.recurrence, task.recurrence_meta, selectedDay, task.starts_at, task.created_at),
     );
-  }, [routines, selectedDay]);
+
+    // Smart sort: unchecked first, then current user first within each group
+    return [...tasks].sort((a, b) => {
+      const aDone = isTaskDoneOnDay(a, selectedDay);
+      const bDone = isTaskDoneOnDay(b, selectedDay);
+
+      // Unchecked first
+      if (aDone !== bDone) return aDone ? 1 : -1;
+
+      // Within same completion status: current user tasks first
+      if (user?.id) {
+        const aOwned = a.assigned_to === user.id;
+        const bOwned = b.assigned_to === user.id;
+        if (aOwned !== bOwned) return aOwned ? -1 : 1;
+      }
+
+      return 0;
+    });
+  }, [routines, selectedDay, isTaskDoneOnDay, user?.id]);
 
   const completedCount = selectedDayTasks.filter((task) =>
     isTaskDoneOnDay(task, selectedDay),
   ).length;
 
   const isSelectedToday = isSameDay(selectedDay, new Date());
-  const isSelectedTodayOrFuture = isSelectedToday || selectedDay > new Date();
+  // Visible tasks (expand/collapse)
+  const visibleTasks = expandedTasks ? selectedDayTasks : selectedDayTasks.slice(0, MAX_DASHBOARD_ROWS);
+
+  // Sort reminders: overdue first, then by due date
+  const sortedReminders = useMemo(() => {
+    return [...reminders].sort((a, b) => {
+      const aOverdue = !a.is_completed && isPast(new Date(a.due_at));
+      const bOverdue = !b.is_completed && isPast(new Date(b.due_at));
+      if (aOverdue !== bOverdue) return aOverdue ? -1 : 1;
+      return new Date(a.due_at).getTime() - new Date(b.due_at).getTime();
+    });
+  }, [reminders]);
 
   // Overdue reminders
   const overdueReminders = useMemo(
@@ -208,7 +249,7 @@ export default function DashboardScreen() {
           <SkeletonDashboard />
         ) : (
         <>
-        {/* Header: Avatar + Greeting + Bell */}
+        {/* Header: Avatar + Greeting + Plus + Bell */}
         <Animated.View
           entering={FadeIn.duration(300)}
           style={{
@@ -218,50 +259,69 @@ export default function DashboardScreen() {
             paddingTop: 4,
           }}
         >
-          {/* Avatar */}
-          {user?.avatar_url ? (
-            <Image
-              source={{ uri: user.avatar_url }}
-              style={{
-                width: 48,
-                height: 48,
-                borderRadius: 24,
-                marginRight: 12,
-              }}
-            />
-          ) : (
-            <View
-              style={{
-                width: 48,
-                height: 48,
-                borderRadius: 24,
-                backgroundColor: colors.primary.DEFAULT + "18",
-                alignItems: "center",
-                justifyContent: "center",
-                marginRight: 12,
-              }}
-            >
-              <Text style={{ fontSize: 16, fontWeight: "700", color: colors.primary.DEFAULT }}>
-                {user?.name ? getInitials(user.name) : ""}
+          {/* Avatar + Greeting → Settings */}
+          <Pressable
+            onPress={() => router.push("/settings")}
+            style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
+          >
+            {user?.avatar_url ? (
+              <Image
+                source={{ uri: user.avatar_url }}
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 24,
+                  marginRight: 12,
+                }}
+              />
+            ) : (
+              <View
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 24,
+                  backgroundColor: colors.primary.DEFAULT + "18",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginRight: 12,
+                }}
+              >
+                <Text style={{ fontSize: 16, fontWeight: "700", color: colors.primary.DEFAULT }}>
+                  {user?.name ? getInitials(user.name) : ""}
+                </Text>
+              </View>
+            )}
+
+            <View style={{ flex: 1 }}>
+              <Text
+                style={{ fontSize: 13 }}
+                className="text-muted-foreground dark:text-muted-foreground-dark"
+              >
+                {t(getTimeGreetingKey())}
+              </Text>
+              <Text
+                style={{ fontSize: 22, fontWeight: "700" }}
+                className="text-foreground dark:text-foreground-dark"
+              >
+                {displayName}
               </Text>
             </View>
-          )}
+          </Pressable>
 
-          {/* Greeting text */}
-          <View style={{ flex: 1 }}>
-            <Text
-              style={{ fontSize: 13 }}
-              className="text-muted-foreground dark:text-muted-foreground-dark"
-            >
-              {t(getTimeGreetingKey())}
-            </Text>
-            <Text
-              style={{ fontSize: 22, fontWeight: "700" }}
-              className="text-foreground dark:text-foreground-dark"
-            >
-              {displayName}
-            </Text>
-          </View>
+          {/* Add button */}
+          <Pressable
+            onPress={() => setShowAddMenu(true)}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            hitSlop={8}
+          >
+            <Ionicons name="add-circle-outline" size={26} color={mutedFg} />
+          </Pressable>
 
           {/* Notification bell */}
           <View
@@ -278,7 +338,6 @@ export default function DashboardScreen() {
                 borderRadius: 20,
                 alignItems: "center",
                 justifyContent: "center",
-                marginLeft: 8,
               }}
               hitSlop={8}
             >
@@ -339,15 +398,6 @@ export default function DashboardScreen() {
               done: completedCount,
               total: selectedDayTasks.length,
             })}
-            action={
-              isSelectedTodayOrFuture
-                ? { icon: "add", onPress: () => router.push(
-                    isSelectedToday
-                      ? "/routines/new"
-                      : `/routines/new?startsAt=${format(selectedDay, "yyyy-MM-dd")}`,
-                  ) }
-                : undefined
-            }
           />
           {selectedDayTasks.length === 0 ? (
             <View className="bg-card dark:bg-card-dark rounded-2xl px-4 py-6 border border-border dark:border-border-dark items-center">
@@ -357,7 +407,7 @@ export default function DashboardScreen() {
             </View>
           ) : (
             <>
-              {selectedDayTasks.slice(0, MAX_DASHBOARD_ROWS).map((task) => {
+              {visibleTasks.map((task) => {
                 const isDone = isTaskDoneOnDay(task, selectedDay);
                 return (
                   <DashboardTaskRow
@@ -366,20 +416,28 @@ export default function DashboardScreen() {
                     isCompleted={isDone}
                     memberNameMap={memberNameMap}
                     onToggle={() => {
+                      const dateStr = format(selectedDay, "yyyy-MM-dd");
+                      const toggleKey = `${task.id}:${dateStr}`;
                       setOptimisticToggles((prev) => {
                         const next = new Map(prev);
-                        next.set(task.id, !isDone);
+                        next.set(toggleKey, !isDone);
                         return next;
                       });
-                      toggleMutation.mutate(task.id, {
-                        onError: () => {
-                          setOptimisticToggles((prev) => {
-                            const next = new Map(prev);
-                            next.delete(task.id);
-                            return next;
-                          });
+                      toggleMutation.mutate(
+                        { taskId: task.id, date: dateStr },
+                        {
+                          onSuccess: () => {
+                            refetchRef.current.routines();
+                          },
+                          onError: () => {
+                            setOptimisticToggles((prev) => {
+                              const next = new Map(prev);
+                              next.delete(toggleKey);
+                              return next;
+                            });
+                          },
                         },
-                      });
+                      );
                     }}
                     onPress={() => router.push(`/routines/${task.id}`)}
                     recurrenceLabel={t(`routines.${task.recurrence}`)}
@@ -388,8 +446,8 @@ export default function DashboardScreen() {
               })}
               {selectedDayTasks.length > MAX_DASHBOARD_ROWS && (
                 <ViewAllLink
-                  label={t("dashboard.viewAll")}
-                  onPress={() => router.push("/(tabs)/routines")}
+                  label={expandedTasks ? t("dashboard.showLess") : t("dashboard.viewAll")}
+                  onPress={() => setExpandedTasks(!expandedTasks)}
                 />
               )}
             </>
@@ -401,7 +459,12 @@ export default function DashboardScreen() {
           <SectionHeader
             title={t("dashboard.items")}
             counter={`${pendingItems.length}`}
+            link={{
+              label: t("dashboard.viewAll"),
+              onPress: () => router.push("/(tabs)/items"),
+            }}
           />
+
           {pendingItems.length === 0 ? (
             <View className="bg-card dark:bg-card-dark rounded-2xl px-4 py-6 border border-border dark:border-border-dark items-center">
               <Text className="text-muted-foreground text-sm mb-3">
@@ -419,7 +482,7 @@ export default function DashboardScreen() {
             </View>
           ) : (
             <>
-              {pendingItems.slice(0, 3).map((item) => (
+              {pendingItems.slice(0, MAX_DASHBOARD_ROWS).map((item) => (
                 <DashboardItemRow
                   key={item.id}
                   item={item}
@@ -427,12 +490,6 @@ export default function DashboardScreen() {
                   t={t}
                 />
               ))}
-              {pendingItems.length > 3 && (
-                <ViewAllLink
-                  label={t("dashboard.viewAll")}
-                  onPress={() => router.push("/(tabs)/items")}
-                />
-              )}
             </>
           )}
         </Animated.View>
@@ -442,8 +499,13 @@ export default function DashboardScreen() {
           <SectionHeader
             title={t("dashboard.reminders")}
             counter={`${reminders.length}`}
+            link={{
+              label: t("dashboard.viewAll"),
+              onPress: () => router.push("/reminders/"),
+            }}
           />
-          {reminders.length === 0 ? (
+
+          {sortedReminders.length === 0 ? (
             <View className="bg-card dark:bg-card-dark rounded-2xl px-4 py-6 border border-border dark:border-border-dark items-center">
               <Text className="text-muted-foreground text-sm mb-3">
                 {t("reminders.noReminders")}
@@ -460,7 +522,7 @@ export default function DashboardScreen() {
             </View>
           ) : (
             <>
-              {reminders.slice(0, 3).map((reminder) => (
+              {sortedReminders.slice(0, MAX_DASHBOARD_ROWS).map((reminder) => (
                 <DashboardReminderRow
                   key={reminder.id}
                   reminder={reminder}
@@ -468,12 +530,6 @@ export default function DashboardScreen() {
                   t={t}
                 />
               ))}
-              {reminders.length > 3 && (
-                <ViewAllLink
-                  label={t("dashboard.viewAll")}
-                  onPress={() => router.push("/reminders/")}
-                />
-              )}
             </>
           )}
         </Animated.View>
@@ -649,11 +705,99 @@ export default function DashboardScreen() {
           </View>
         </Pressable>
       )}
+
+      {/* Add Menu Dropdown */}
+      {showAddMenu && (
+        <Pressable
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 100,
+          }}
+          onPress={() => setShowAddMenu(false)}
+        >
+          <View
+            style={{
+              position: "absolute",
+              top: bellLayout.y + bellLayout.height + 8,
+              right: 56,
+              width: 220,
+              borderRadius: 16,
+              backgroundColor: isDark ? colors.card.dark : colors.card.DEFAULT,
+              borderWidth: 1,
+              borderColor: isDark ? colors.border.dark : colors.border.DEFAULT,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.15,
+              shadowRadius: 12,
+              elevation: 8,
+              overflow: "hidden",
+            }}
+          >
+            {[
+              {
+                icon: "checkbox-outline" as const,
+                label: t("dashboard.addTask"),
+                color: colors.primary.DEFAULT,
+                onPress: () => {
+                  setShowAddMenu(false);
+                  router.push(
+                    isSelectedToday
+                      ? "/routines/new"
+                      : `/routines/new?startsAt=${format(selectedDay, "yyyy-MM-dd")}`,
+                  );
+                },
+              },
+              {
+                icon: "cart-outline" as const,
+                label: t("dashboard.addItem"),
+                color: colors.primary.DEFAULT,
+                onPress: () => {
+                  setShowAddMenu(false);
+                  router.push("/items/new");
+                },
+              },
+              {
+                icon: "alert-circle-outline" as const,
+                label: t("dashboard.addUrgent"),
+                color: colors.destructive.DEFAULT,
+                onPress: () => {
+                  setShowAddMenu(false);
+                  router.push("/urgent/new");
+                },
+              },
+            ].map((item, i) => (
+              <Pressable
+                key={i}
+                onPress={item.onPress}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  paddingHorizontal: 16,
+                  paddingVertical: 14,
+                  gap: 12,
+                  borderBottomWidth: i < 2 ? 1 : 0,
+                  borderBottomColor: isDark ? colors.border.dark : colors.border.DEFAULT,
+                }}
+              >
+                <Ionicons name={item.icon} size={20} color={item.color} />
+                <Text
+                  style={{ fontSize: 14, fontWeight: "500" }}
+                  className="text-foreground dark:text-foreground-dark"
+                >
+                  {item.label}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </Pressable>
+      )}
     </SafeAreaView>
   );
 }
-
-/* ---------- Sub-components ---------- */
 
 function DashboardTaskRow({
   task,
@@ -769,6 +913,12 @@ function DashboardItemRow({
   const typeIcon: keyof typeof Ionicons.glyphMap =
     item.type === "buy" ? "cart" : item.type === "repair" ? "construct" : "build";
 
+  const statusIcon: keyof typeof Ionicons.glyphMap =
+    item.status === "in_progress" ? "play-circle-outline" : "time-outline";
+
+  const statusColor =
+    item.status === "in_progress" ? colors.warning.DEFAULT : colors.muted.foreground;
+
   const priceStr = item.price ? ` · R$ ${item.price.toFixed(2)}` : "";
 
   return (
@@ -776,10 +926,14 @@ function DashboardItemRow({
       icon={{ icon: typeIcon, color: priorityColor }}
       title={item.name}
       subtitle={
-        <Text style={{ fontSize: 12 }} className="text-muted-foreground dark:text-muted-foreground-dark">
-          {t(`items.${item.type}`)}
-          {priceStr}
-        </Text>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+          <Ionicons name={statusIcon} size={12} color={statusColor} />
+          <Text style={{ fontSize: 12 }} className="text-muted-foreground dark:text-muted-foreground-dark">
+            {t(`items.${item.type}`)}
+            {item.status === "in_progress" ? ` · ${t("items.inProgress")}` : ""}
+            {priceStr}
+          </Text>
+        </View>
       }
       onPress={onPress}
     />

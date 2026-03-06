@@ -210,7 +210,7 @@ export default function RoutinesScreen() {
                 task={item}
                 isCompleted={isCompleted}
                 onToggle={() => {
-                  toggleMutation.mutate(item.id, {
+                  toggleMutation.mutate({ taskId: item.id }, {
                     onSuccess: () => refetch(),
                   });
                 }}

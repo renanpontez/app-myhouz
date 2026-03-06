@@ -53,9 +53,9 @@ export default function TabLayout() {
       <Tabs.Screen
         name="more"
         options={{
-          title: t("settings.title"),
+          title: t("urgent.title"),
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="ellipsis-horizontal" size={size} color={color} />
+            <Ionicons name="alert-circle-outline" size={size} color={color} />
           ),
         }}
       />
