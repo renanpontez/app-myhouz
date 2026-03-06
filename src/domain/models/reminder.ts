@@ -7,6 +7,7 @@ export interface Reminder {
   completed_at: string | null;
   completed_by: string | null;
   assigned_to: string | null;
+  icon: string | null;
   created_by: string;
   created_at: string;
   updated_at: string;

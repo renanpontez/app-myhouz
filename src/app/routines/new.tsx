@@ -7,6 +7,7 @@ import { useCreateRoutine } from "@/hooks/useRoutines";
 import { MemberPicker } from "@/components/ui/MemberPicker";
 import { DateTimePicker } from "@/components/ui/DateTimePicker";
 import { DayOfWeekPicker } from "@/components/ui/DayOfWeekPicker";
+import { IconPicker } from "@/components/ui/IconPicker";
 import { toast } from "@/stores/toast.store";
 import { colors } from "@/styles/colors";
 import type { RecurrenceType, RecurrenceMeta } from "@/domain/models";
@@ -35,6 +36,7 @@ export default function NewRoutineScreen() {
   const [selectedDays, setSelectedDays] = useState<number[]>([]);
   const [intervalEvery, setIntervalEvery] = useState("2");
   const [intervalUnit, setIntervalUnit] = useState<"days" | "weeks" | "months">("days");
+  const [icon, setIcon] = useState<string | null>(null);
 
   const handleToggleDay = (day: number) => {
     setSelectedDays((prev) =>
@@ -61,6 +63,7 @@ export default function NewRoutineScreen() {
         recurrence,
         recurrence_meta: buildRecurrenceMeta(),
         assigned_to: assignedTo || undefined,
+        icon: icon || undefined,
         starts_at: startsAt ? `${startsAt.getFullYear()}-${String(startsAt.getMonth() + 1).padStart(2, "0")}-${String(startsAt.getDate()).padStart(2, "0")}` : undefined,
       };
       await createRoutine.mutateAsync(payload);
@@ -173,6 +176,12 @@ export default function NewRoutineScreen() {
               )}
             </View>
           )}
+
+          <IconPicker
+            value={icon}
+            onChange={setIcon}
+            label={t("routines.icon")}
+          />
 
           <MemberPicker
             value={assignedTo}

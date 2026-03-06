@@ -110,12 +110,12 @@ export function useDeleteRoutine() {
 export function useToggleRoutine() {
   const idRef = useHouseholdIdRef();
 
-  return useApiMutation<RoutineResponse, string>(
+  return useApiMutation<RoutineResponse, { taskId: string; date?: string }>(
     "post",
-    (taskId) => {
+    (vars) => {
       const id = idRef.current;
       if (!id) return "";
-      return API.household(id).routines.toggle(taskId);
+      return API.household(id).routines.toggle(vars.taskId);
     },
   );
 }

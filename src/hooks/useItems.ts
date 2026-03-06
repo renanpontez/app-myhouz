@@ -20,7 +20,7 @@ function useHouseholdIdRef() {
   return ref;
 }
 
-export function useItems(filters?: { type?: string; status?: string }) {
+export function useItems(filters?: { type?: string; status?: string; search?: string }) {
   const { activeHouseholdId } = useHouseholdStore();
   const endpoints = activeHouseholdId
     ? API.household(activeHouseholdId).items
@@ -31,12 +31,13 @@ export function useItems(filters?: { type?: string; status?: string }) {
     const params = new URLSearchParams();
     if (filters.type) params.set("type", filters.type);
     if (filters.status) params.set("status", filters.status);
+    if (filters.search) params.set("search", filters.search);
     const qs = params.toString();
     if (qs) url += `?${qs}`;
   }
 
   return useApiQuery<ItemsResponse>(
-    ["items", activeHouseholdId ?? "", filters?.type ?? "", filters?.status ?? ""],
+    ["items", activeHouseholdId ?? "", filters?.type ?? "", filters?.status ?? "", filters?.search ?? ""],
     url,
     { enabled: !!activeHouseholdId },
   );

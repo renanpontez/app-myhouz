@@ -9,6 +9,7 @@ import { useItem, useUpdateItem, useDeleteItem } from "@/hooks/useItems";
 import { useHouseholdStore } from "@/stores";
 import { getMemberName } from "@/utils/members";
 import { MemberPicker } from "@/components/ui/MemberPicker";
+import { IconPicker } from "@/components/ui/IconPicker";
 import { SkeletonDetail } from "@/components/ui/Skeleton";
 import { colors } from "@/styles/colors";
 import { toast } from "@/stores/toast.store";
@@ -47,6 +48,7 @@ export default function ItemDetailScreen() {
   const [editLink, setEditLink] = useState("");
   const [editAssignedTo, setEditAssignedTo] = useState<string | null>(null);
   const [editNotes, setEditNotes] = useState("");
+  const [editIcon, setEditIcon] = useState<string | null>(null);
 
   const enterEditMode = () => {
     if (!item) return;
@@ -57,6 +59,7 @@ export default function ItemDetailScreen() {
     setEditLink(item.link ?? "");
     setEditAssignedTo(item.assigned_to);
     setEditNotes(item.notes ?? "");
+    setEditIcon(item.icon ?? null);
     setIsEditing(true);
   };
 
@@ -70,6 +73,7 @@ export default function ItemDetailScreen() {
         link: editLink || null,
         assigned_to: editAssignedTo,
         notes: editNotes || null,
+        icon: editIcon,
       } as any);
       setIsEditing(false);
       toast.success(t("common.success"));
@@ -202,6 +206,12 @@ export default function ItemDetailScreen() {
               value={editAssignedTo}
               onChange={setEditAssignedTo}
               label={t("items.assignedTo")}
+            />
+
+            <IconPicker
+              value={editIcon}
+              onChange={setEditIcon}
+              label={t("routines.icon")}
             />
 
             <View>

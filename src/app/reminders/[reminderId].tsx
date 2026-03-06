@@ -10,6 +10,7 @@ import { useHouseholdStore } from "@/stores";
 import { getMemberName } from "@/utils/members";
 import { MemberPicker } from "@/components/ui/MemberPicker";
 import { DateTimePicker } from "@/components/ui/DateTimePicker";
+import { IconPicker } from "@/components/ui/IconPicker";
 import { SkeletonDetail } from "@/components/ui/Skeleton";
 import { colors } from "@/styles/colors";
 import { toast } from "@/stores/toast.store";
@@ -39,12 +40,14 @@ export default function ReminderDetailScreen() {
   const [editTitle, setEditTitle] = useState("");
   const [editDueAt, setEditDueAt] = useState<Date | null>(null);
   const [editAssignedTo, setEditAssignedTo] = useState<string | null>(null);
+  const [editIcon, setEditIcon] = useState<string | null>(null);
 
   const enterEditMode = () => {
     if (!reminder) return;
     setEditTitle(reminder.title);
     setEditDueAt(new Date(reminder.due_at));
     setEditAssignedTo(reminder.assigned_to);
+    setEditIcon(reminder.icon ?? null);
     setIsEditing(true);
   };
 
@@ -55,6 +58,7 @@ export default function ReminderDetailScreen() {
         title: editTitle,
         due_at: editDueAt.toISOString(),
         assigned_to: editAssignedTo,
+        icon: editIcon,
       });
       setIsEditing(false);
       toast.success(t("common.success"));
@@ -127,6 +131,12 @@ export default function ReminderDetailScreen() {
               value={editAssignedTo}
               onChange={setEditAssignedTo}
               label={t("reminders.assignedTo")}
+            />
+
+            <IconPicker
+              value={editIcon}
+              onChange={setEditIcon}
+              label={t("routines.icon")}
             />
           </View>
 

@@ -99,16 +99,23 @@ export default function SettingsScreen() {
           <Text className="text-2xl font-bold text-foreground dark:text-foreground-dark">{t("settings.title")}</Text>
         </View>
 
-        {/* Profile */}
-        <View className="bg-card dark:bg-card-dark rounded-2xl p-4 mb-4 border border-border dark:border-border-dark flex-row items-center">
-          <View className="w-12 h-12 rounded-full bg-primary/10 items-center justify-center mr-4">
-            <Text className="text-primary font-bold text-base">{user ? getInitials(user.name) : ""}</Text>
+        {/* Profile Header */}
+        <View className="items-center mb-6">
+          <View className="w-16 h-16 rounded-full bg-primary/10 items-center justify-center mb-3">
+            <Text className="text-primary font-bold text-xl">{user ? getInitials(user.name) : ""}</Text>
           </View>
-          <View>
-            <Text className="text-base font-semibold text-foreground dark:text-foreground-dark">{user?.name}</Text>
-            <Text className="text-sm text-muted-foreground">{user?.email}</Text>
-          </View>
+          <Text className="text-lg font-semibold text-foreground dark:text-foreground-dark">{user?.name}</Text>
+          <Text className="text-sm text-muted-foreground mt-0.5">{user?.email}</Text>
         </View>
+
+        {/* Members */}
+        <Pressable className="bg-card dark:bg-card-dark rounded-2xl p-4 mb-3 border border-border dark:border-border-dark flex-row items-center justify-between" onPress={() => router.push("/members")}>
+          <View className="flex-row items-center gap-3">
+            <Ionicons name="people-outline" size={20} color={colors.primary.DEFAULT} />
+            <Text className="text-base text-foreground dark:text-foreground-dark">{t("members.title")}</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={colors.muted.foreground} />
+        </Pressable>
 
         {/* Theme */}
         <Pressable className="bg-card dark:bg-card-dark rounded-2xl p-4 mb-3 border border-border dark:border-border-dark flex-row items-center justify-between" onPress={toggleTheme}>

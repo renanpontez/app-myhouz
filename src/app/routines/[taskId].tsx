@@ -12,6 +12,7 @@ import { getMemberName } from "@/utils/members";
 import { MemberPicker } from "@/components/ui/MemberPicker";
 import { DateTimePicker } from "@/components/ui/DateTimePicker";
 import { DayOfWeekPicker } from "@/components/ui/DayOfWeekPicker";
+import { IconPicker } from "@/components/ui/IconPicker";
 import { StreakIndicator } from "@/components/ui/StreakIndicator";
 import { SkeletonDetail } from "@/components/ui/Skeleton";
 import { colors } from "@/styles/colors";
@@ -58,6 +59,7 @@ export default function RoutineDetailScreen() {
   const [editSelectedDays, setEditSelectedDays] = useState<number[]>([]);
   const [editIntervalEvery, setEditIntervalEvery] = useState("2");
   const [editIntervalUnit, setEditIntervalUnit] = useState<"days" | "weeks" | "months">("days");
+  const [editIcon, setEditIcon] = useState<string | null>(null);
 
   const enterEditMode = () => {
     if (!task) return;
@@ -74,6 +76,7 @@ export default function RoutineDetailScreen() {
       setEditIntervalEvery(String(task.recurrence_meta.every));
       setEditIntervalUnit(task.recurrence_meta.unit);
     }
+    setEditIcon(task.icon ?? null);
     setIsEditing(true);
   };
 
@@ -96,6 +99,7 @@ export default function RoutineDetailScreen() {
         recurrence: editRecurrence,
         recurrence_meta: buildRecurrenceMeta(),
         assigned_to: editAssignedTo,
+        icon: editIcon,
         starts_at: editStartsAt ? `${editStartsAt.getFullYear()}-${String(editStartsAt.getMonth() + 1).padStart(2, "0")}-${String(editStartsAt.getDate()).padStart(2, "0")}` : null,
       });
       setIsEditing(false);
@@ -254,6 +258,12 @@ export default function RoutineDetailScreen() {
               </View>
             )}
 
+            <IconPicker
+              value={editIcon}
+              onChange={setEditIcon}
+              label={t("routines.icon")}
+            />
+
             <MemberPicker
               value={editAssignedTo}
               onChange={setEditAssignedTo}
@@ -373,7 +383,7 @@ export default function RoutineDetailScreen() {
 
         <Pressable
           className={`w-full rounded-2xl py-4 items-center active:opacity-80 mt-4 ${isCompleted ? "bg-muted dark:bg-muted-dark" : "bg-success"}`}
-          onPress={() => toggleRoutine.mutate(taskId)}
+          onPress={() => toggleRoutine.mutate({ taskId })}
         >
           <Text className={`font-semibold text-base ${isCompleted ? "text-muted-foreground" : "text-white"}`}>
             {isCompleted ? t("common.done") : t("routines.completedToday")}

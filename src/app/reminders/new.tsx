@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { useCreateReminder } from "@/hooks/useReminders";
 import { MemberPicker } from "@/components/ui/MemberPicker";
 import { DateTimePicker } from "@/components/ui/DateTimePicker";
+import { IconPicker } from "@/components/ui/IconPicker";
 import { toast } from "@/stores/toast.store";
 
 export default function NewReminderScreen() {
@@ -15,6 +16,7 @@ export default function NewReminderScreen() {
   const [title, setTitle] = useState("");
   const [dueAt, setDueAt] = useState<Date | null>(null);
   const [assignedTo, setAssignedTo] = useState<string | null>(null);
+  const [icon, setIcon] = useState<string | null>(null);
 
   const handleCreate = async () => {
     if (!dueAt) return;
@@ -23,6 +25,7 @@ export default function NewReminderScreen() {
         title,
         due_at: dueAt.toISOString(),
         assigned_to: assignedTo || undefined,
+        icon: icon || undefined,
       });
       router.dismiss();
     } catch (err) {
@@ -70,6 +73,12 @@ export default function NewReminderScreen() {
             value={assignedTo}
             onChange={setAssignedTo}
             label={t("reminders.assignedTo")}
+          />
+
+          <IconPicker
+            value={icon}
+            onChange={setIcon}
+            label={t("routines.icon")}
           />
         </View>
 

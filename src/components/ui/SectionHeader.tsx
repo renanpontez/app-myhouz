@@ -2,22 +2,21 @@ import { View, Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Badge } from "./Badge";
 import type { BadgeProps } from "./Badge";
-import { colors } from "@/styles/colors";
 
 interface SectionHeaderProps {
   title: string;
-  action?: { icon: keyof typeof Ionicons.glyphMap; onPress: () => void };
   counter?: string;
   badge?: BadgeProps;
   subtitle?: { icon: keyof typeof Ionicons.glyphMap; text: string };
+  link?: { label: string; onPress: () => void };
 }
 
 export function SectionHeader({
   title,
-  action,
   counter,
   badge,
   subtitle,
+  link,
 }: SectionHeaderProps) {
   return (
     <View style={{ marginBottom: 12 }}>
@@ -52,19 +51,14 @@ export function SectionHeader({
           )}
           {badge && <Badge {...badge} />}
         </View>
-        {action && (
-          <Pressable
-            onPress={action.onPress}
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: 16,
-              backgroundColor: colors.primary.DEFAULT,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Ionicons name={action.icon} size={18} color="#fff" />
+        {link && (
+          <Pressable onPress={link.onPress} hitSlop={8}>
+            <Text
+              style={{ fontSize: 13, fontWeight: "600" }}
+              className="text-muted-foreground dark:text-foreground-dark"
+            >
+              {link.label}
+            </Text>
           </Pressable>
         )}
       </View>
@@ -77,7 +71,7 @@ export function SectionHeader({
             marginTop: 4,
           }}
         >
-          <Ionicons name={subtitle.icon} size={12} color={colors.muted.foreground} />
+          <Ionicons name={subtitle.icon} size={12} color="#64697A" />
           <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark">
             {subtitle.text}
           </Text>

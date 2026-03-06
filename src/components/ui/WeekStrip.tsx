@@ -165,9 +165,9 @@ export function WeekStrip({
           if (allDone) ringColor = colors.success.DEFAULT;
 
           if (isSelected) {
-            circleBg = colors.primary.DEFAULT;
+            circleBg = allDone ? colors.success.DEFAULT : colors.primary.DEFAULT;
             numberColor = "#FFFFFF";
-            labelColor = colors.primary.DEFAULT;
+            labelColor = allDone ? colors.success.DEFAULT : colors.primary.DEFAULT;
             if (!hasActive) ringColor = colors.primary.DEFAULT;
           } else if (allDone) {
             circleBg = colors.success.DEFAULT;
@@ -244,7 +244,7 @@ export function WeekStrip({
 
               {/* Today dot — reserve space on all days to prevent layout shift */}
               <View style={{ height: 9, marginTop: 4, alignItems: "center", justifyContent: "center" }}>
-                {isDayToday && !isSelected && (
+                {isDayToday && (
                   <View
                     style={{
                       width: 5,

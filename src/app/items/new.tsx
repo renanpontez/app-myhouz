@@ -5,6 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { useCreateItem } from "@/hooks/useItems";
 import { MemberPicker } from "@/components/ui/MemberPicker";
+import { IconPicker } from "@/components/ui/IconPicker";
 import { toast } from "@/stores/toast.store";
 import type { ItemType, ItemPriority } from "@/domain/models";
 
@@ -23,6 +24,7 @@ export default function NewItemScreen() {
   const [link, setLink] = useState("");
   const [assignedTo, setAssignedTo] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
+  const [icon, setIcon] = useState<string | null>(null);
 
   const handleCreate = async () => {
     try {
@@ -34,6 +36,7 @@ export default function NewItemScreen() {
         price: price ? parseFloat(price) : undefined,
         link: link || undefined,
         assigned_to: assignedTo || undefined,
+        icon: icon || undefined,
       } as any);
       router.dismiss();
     } catch (err) {
@@ -131,6 +134,12 @@ export default function NewItemScreen() {
             value={assignedTo}
             onChange={setAssignedTo}
             label={t("items.assignedTo")}
+          />
+
+          <IconPicker
+            value={icon}
+            onChange={setIcon}
+            label={t("routines.icon")}
           />
 
           <View>

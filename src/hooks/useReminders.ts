@@ -20,17 +20,23 @@ function useHouseholdIdRef() {
   return ref;
 }
 
-export function useReminders(filters?: { status?: string }) {
+export function useReminders(filters?: { status?: string; search?: string }) {
   const { activeHouseholdId } = useHouseholdStore();
   const endpoints = activeHouseholdId
     ? API.household(activeHouseholdId).reminders
     : null;
 
   let url = endpoints?.list ?? "";
-  if (filters?.status) url += `?status=${filters.status}`;
+  if (filters) {
+    const params = new URLSearchParams();
+    if (filters.status) params.set("status", filters.status);
+    if (filters.search) params.set("search", filters.search);
+    const qs = params.toString();
+    if (qs) url += `?${qs}`;
+  }
 
   return useApiQuery<RemindersResponse>(
-    ["reminders", activeHouseholdId ?? "", filters?.status ?? ""],
+    ["reminders", activeHouseholdId ?? "", filters?.status ?? "", filters?.search ?? ""],
     url,
     { enabled: !!activeHouseholdId },
   );
